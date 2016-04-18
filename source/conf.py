@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # StreamReactor documentation build configuration file, created by
-# sphinx-quickstart on Sat Apr 16 15:44:05 2016.
+# sphinx-quickstart on Mon Apr 18 23:57:12 2016.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
