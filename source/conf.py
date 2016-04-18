@@ -55,7 +55,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'StreamReactor'
-copyright = u'2016, Andrew Stevenson'
+copyright = u'2016, DataMountaineer'
 author = u'Andrew Stevenson'
 
 # The version info for the project you're documenting, acts as replacement for
