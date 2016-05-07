@@ -1,22 +1,25 @@
-.. StreamReactor documentation master file, created by
-   sphinx-quickstart on Mon Apr 18 23:57:12 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. StreamReactor documentation master file, created by Andrew Stevenson
+
+.. figure:: ../images/DM-logo.jpg
+   :alt: 
 
 Welcome to StreamReactor's documentation!
 =========================================
 
-Contents:
+The Stream Reactor is a set of components to build a reference architecture for streaming data platforms. At it's core is Kafka, with Kafka Connect providing a unified way to stream data in and out of the system.
+
+The actual processing if left to streaming engines and libraries such as Spark Streaming,  Apache Flink, Storm and Kafka Streams.
+
+DataMountaineer provides a range of supporting components so the main technologies, mainly Kafka, Kafka Connect and the Confluent Platform.
+
+.. figure:: ../images/stream-reactor-1.jpg
+   :alt: 
+
+Kafka Connectors
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   connectors
+   tools
+   socket-streamer
