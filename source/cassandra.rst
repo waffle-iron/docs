@@ -227,7 +227,7 @@ Starting the Source Connector (Standalone)
 Now we are ready to start the Cassandra Source Connector in standalone
 mode.
 
-..note:: You need to add the connector to your classpath or you can
+.. note:: You need to add the connector to your classpath or you can
 create a folder in share/java like kafka-connect-myconnector and the
 start scripts provided by Confluent will pick it up. The start script
 looks for folders beginning with kafka-connect.
@@ -345,7 +345,7 @@ There are two changes from the previous configuration:
    column used in the where clause with the lower and upper bounds.
 2. The *cassandra.import.mode* has been set to *incremental*.
 
-.note::Only Cassandra columns with data type Timeuuid are supported for
+.. note:: Only Cassandra columns with data type Timeuuid are supported for
 incremental mode. The column must also be either the primary key or part
 of the compound key. If it's part of the compound key this will
 introduce a full scan with ALLOW\_FILTERING added to the query.
@@ -752,7 +752,7 @@ containing a range query.
 
     SELECT * FROM demo.orders WHERE created > maxTimeuuid(?) AND created <= minTimeuuid(?)
 
-.note:: ! If the column used for tracking timestamps is a compound key,
+.. note:: ! If the column used for tracking timestamps is a compound key,
 ALLOW FILTERING is appended to the query. This can have a detrimental
 performance impact of Cassandra as it is effectively issuing a full
 scan.
