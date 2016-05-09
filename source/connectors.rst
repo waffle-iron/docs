@@ -14,10 +14,10 @@ Connectors
 .. toctree::
    :maxdepth: 3
 
-   stream-reactor/kafka-connect-cassandra/docs/source/cassandra
-   stream-reactor/kafka-connect-bloomberg/docs/source/bloomberg
-   stream-reactor/kafka-connect-druid/docs/source/druid
-   stream-reactor/kafka-connect-elastic/docs/source/elastic
-   stream-reactor/kafka-connect-hbase/docs/source/hbase
-   stream-reactor/kafka-connect-kudu/docs/source/kudu
-   stream-reactor/kafka-connect-redis/docs/source/redis
+   cassandra
+   bloomberg
+   druid
+   elastic
+   hbase
+   kudu
+   redis

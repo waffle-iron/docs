@@ -19,4 +19,4 @@ Kafka Connectors
 
    connectors
    tools
-   stream-reactor/kafka-socket-streamer/docs/source/socket-streamer
+   socket-streamer

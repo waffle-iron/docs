@@ -6,5 +6,10 @@
 The connector, tools and common repos are added as git submodules.
 
 Pull the latest.
+git submodule init
+git submodule update
 
-The index.rst points to connector.rst, tools.rst and socket-streamer.rst. These in turn point to the rst's in the git submodule repos.
+Then run init.sh to copy the rst's to source/
+
+
+The index.rst points to connector.rst, tools.rst and socket-streamer.rst.
