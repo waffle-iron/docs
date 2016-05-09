@@ -1,7 +1,4 @@
-.. _kafka_connect:
-
 .. image:: https://travis-ci.org/datamountaineer/stream-reactor-gradle.svg?branch=master
-
 
 Kafka Connect
 =============
@@ -12,26 +9,15 @@ Kafka connect forms an integral component in an ETL pipeline when combined with 
 
 Kafka Connect can run either as a standalone process for testing and one-off jobs, or as a distributed, scalable, fault tolerant service supporting an entire organisations. This allows it to scale down to development, testing, and small production deployments with a low barrier to entry and low operational overhead, and to scale up to support a large organisations data pipeline.
 
-Kafka Connectors
-~~~~~~~~~~~~~~~~
+Connectors
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
 
-   bloomberg
-   cassandra
-   kudu
-   elastic
-   hbase
-   druid
-   redis	
-   jdbc
-   neo4j
-   rethinkdb
-   orientdb
-   http
-   jms
-   scada
-   rawsocket	
-   influxdb
-   
+   stream-reactor/kafka-connect-cassandra/docs/source/cassandra
+   stream-reactor/kafka-connect-bloomberg/docs/source/bloomberg
+   stream-reactor/kafka-connect-druid/docs/source/druid
+   stream-reactor/kafka-connect-elastic/docs/source/elastic
+   stream-reactor/kafka-connect-hbase/docs/source/hbase
+   stream-reactor/kafka-connect-kudu/docs/source/kudu
+   stream-reactor/kafka-connect-redis/docs/source/redis
