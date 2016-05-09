@@ -1,12 +1,3 @@
-[submodule "stream-reactor"]
-	path = stream-reactor
-	url = https://github.com/datamountaineer/stream-reactor
-[submodule "kafka-connect-tools"]
-	path = kafka-connect-tools
-	url = https://github.com/datamountaineer/kafka-connect-tools
-[submodule "kafka-connect-common"]
-	path = kafka-connect-common
-	url = https://github.com/datamountaineer/kafka-connect-common
 [submodule "source/kafka-connect-common"]
 	path = source/kafka-connect-common
 	url = https://github.com/datamountaineer/kafka-connect-common
