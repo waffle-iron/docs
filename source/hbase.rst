@@ -14,9 +14,6 @@ Prerequisites
 Setup
 -----
 
-HBase Setup
-~~~~~~~~~~~
-
 Confluent Setup
 ~~~~~~~~~~~~~~~
 
@@ -52,6 +49,47 @@ Start the Confluent platform.
     bin/kafka-server-start etc/kafka/server.properties &
     bin/schema-registry-start etc/schema-registry/schema-registry.properties &
 
+HBase Setup
+~~~~~~~~~~~
+
+Download and extract HBase:
+
+.. code:: bash
+
+    wget https://www.apache.org/dist/hbase/1.2.1/hbase-1.2.1-bin.tar.gz
+    tar -xvf hbase-1.2.1-bin.tar.gz -C hbase
+
+
+Edit ``conf/hbase-site.xml`` and add the following content:
+
+.. code:: bash
+
+    <?xml version="1.0"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+     <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>hbase.rootdir</name>
+        <value>file:///tmp/hbase</value>
+      </property>
+      <property>
+        <name>hbase.zookeeper.property.dataDir</name>
+        <value>/tmp/zookeeper</value>
+      </property>
+    </configuration>
+
+The ``hbase.cluster.distributed`` is required since when you start hbase it will try and start it's own Zookeeper, but in
+this case we want to use Confluents.
+
+Now start HBase and check the logs to ensure it's up:
+
+.. code:: bash
+
+    bin/start-hbase.sh
+
 Build the Connector and CLI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -79,11 +117,24 @@ Sink Connector QuickStart
 HBase Table
 ~~~~~~~~~~~
 
-The sink expects a precreated table in HBase. In the HBase shell create the test table:
+The sink expects a precreated table in HBase. In the HBase shell create the test table, go to your HBase install location.
 
 .. code:: bash
 
-    create 'person',{NAME=>'d', VERSIONS=>1}
+    bin/hbase shell
+    hbase(main):001:0> create 'person_hbase',{NAME=>'d', VERSIONS=>1}
+
+    hbase(main):001:0> list
+    person
+    1 row(s) in 0.9530 seconds
+
+    hbase(main):002:0> describe 'person'
+    DESCRIPTION                                                                                                                           ENABLED
+     'person', {NAME => 'd', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'false', DATA_BLOCK_ENCOD true
+     ING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION
+     _SCOPE => '0'}
+    1 row(s) in 0.0810 seconds
+
 
 Sink Connector Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -147,6 +198,26 @@ We can use the CLI to check if the connector is up but you should be able to see
 
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get hbase-sink
 
+    INFO
+        ____        __        __  ___                  __        _
+       / __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
+      / / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
+     / /_/ / /_/ / /_/ /_/ / /  / / /_/ / /_/ / / / / /_/ /_/ / / / / /  __/  __/ /
+    /_____/\\_,\\\\\\\__,_/_/  /_/\___\\\\\,\/_/ /_/\\_/\__,_/_/_/ /_/\___/\___/_/
+          / / / / __ )____ _________ / ___/(_)___  / /__
+         / /_/ / __  / __ `/ ___/ _ \\__ \/ / __ \/ //_/
+        / __  / /_/ / /_/ (__  )  __/__/ / / / / / ,<
+       /_/ /_/_____/\__,_/____/\___/____/_/_/ /_/_/|_|
+
+    By Stefan Bocutiu (com.datamountaineer.streamreactor.connect.hbase.HbaseSinkTask:44)
+    INFO HbaseSinkConfig values:
+        connect.hbase.sink.fields = firstName,lastName,age,salary=income
+        connect.hbase.sink.column.family = d
+        connect.hbase.sink.table.name = person_hbase
+        connect.hbase.sink.key = firstName,lastName
+        connect.hbase.sink.rowkey.mode = FIELDS
+
+
 
 Test Records
 ^^^^^^^^^^^^
@@ -174,7 +245,26 @@ Check for records in HBase
 
 Now check the logs of the connector you should see this
 
-... code:: bash
+.. code:: bash
+
+    INFO Sink task org.apache.kafka.connect.runtime.WorkerSinkTask@48ffb4dc finished initialization and start (org.apache.kafka.connect.runtime.WorkerSinkTask:155)
+    INFO Writing 2 rows to Hbase... (com.datamountaineer.streamreactor.connect.hbase.writers.HbaseWriter:83)
+
+In HBase:
+
+.. code:: bash
+
+    hbase(main):004:0* scan 'person_hbase'
+    ROW                                                  COLUMN+CELL
+     Anna\x0AJones                                       column=d:age, timestamp=1463056888641, value=\x00\x00\x00\x1C
+     Anna\x0AJones                                       column=d:firstName, timestamp=1463056888641, value=Anna
+     Anna\x0AJones                                       column=d:income, timestamp=1463056888641, value=@\xB56\x00\x00\x00\x00\x00
+     Anna\x0AJones                                       column=d:lastName, timestamp=1463056888641, value=Jones
+     John\x0ASmith                                       column=d:age, timestamp=1463056693877, value=\x00\x00\x00\x1E
+     John\x0ASmith                                       column=d:firstName, timestamp=1463056693877, value=John
+     John\x0ASmith                                       column=d:income, timestamp=1463056693877, value=@\xB2\xDE\x00\x00\x00\x00\x00
+     John\x0ASmith                                       column=d:lastName, timestamp=1463056693877, value=Smith
+    2 row(s) in 0.0260 seconds
 
 Now stop the connector.
 
@@ -226,10 +316,6 @@ The sink supports:
 Configurations
 --------------
 
-| connect.hbase.sink.key | String | | If row key mode is set to FIELDS this setting is required. Multiple fields can be specified by separating them via a comma; The fields are combined using a key separator by default is set to <\\n>. |
-
-
-
 +----------------------------------+-----------+----------+-----------------------------------+
 | name                             | data type | required | description                       |
 +==================================+===========+==========+===================================+
@@ -260,7 +346,7 @@ Configurations
 |                                  |           |          || topic, offset and partition to   |
 |                                  |           |          || build the HBase row key.         |
 +----------------------------------+-----------+----------+-----------------------------------+
-| connect.hbase.sink.fields        | String    | Yes      || Specifies which fields to        |
+| connect.hbase.sink.fields        | String    | No       || Specifies which fields to        |
 |                                  |           |          || consider when inserting the new  |
 |                                  |           |          || HBase entry. If is not set it    |
 |                                  |           |          || will take all the fields present |

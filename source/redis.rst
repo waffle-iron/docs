@@ -175,23 +175,17 @@ We can use the CLI to check if the connector is up but you should be able to see
 .. code:: bash
 
     [2016-05-08 22:37:05,616] INFO
-     ____              __                                                 __
-    /\  _`\           /\ \__              /'\_/`\                        /\ \__           __
-    \ \ \/\ \     __  \ \ ,_\    __      /\      \    ___   __  __    ___\ \ ,_\    __   /\_\    ___      __     __   _ __
-     \ \ \ \ \  /'__`\ \ \ \/  /'__`\    \ \ \__\ \  / __`\/\ \/\ \ /' _ `\ \ \/  /'__`\ \/\ \ /' _ `\  /'__`\ /'__`\/\`'__\
-      \ \ \_\ \/\ \L\.\_\ \ \_/\ \L\.\_   \ \ \_/\ \/\ \L\ \ \ \_\ \/\ \/\ \ \ \_/\ \L\.\_\ \ \/\ \/\ \/\  __//\  __/\ \ \/
-    \ \____/\ \__/.\_\\ \__\ \__/.\_\   \ \_\\ \_\ \____/\ \____/\ \_\ \_\ \__\ \__/.\_\\ \_\ \_\ \_\ \____\ \____\\ \_\
-        \/___/  \/__/\/_/ \/__/\/__/\/_/    \/_/ \/_/\/___/  \/___/  \/_/\/_/\/__/\/__/\/_/ \/_/\/_/\/_/\/____/\/____/ \/_/
+        ____        __        __  ___                  __        _
+       / __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
+      / / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
+     / /_/ / /_/ / /_/ /_/ / /  / / /_/ / /_/ / / / / /_/ /_/ / / / / /  __/  __/ /
+    /_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
+        ____           ___      _____ _       __
+       / __ \___  ____/ (_)____/ ___/(_)___  / /__
+      / /_/ / _ \/ __  / / ___/\__ \/ / __ \/ //_/
+     / _, _/  __/ /_/ / (__  )___/ / / / / / ,<
+    /_/ |_|\___/\__,_/_/____//____/_/_/ /_/_/|_|
 
-
-     ____               __                  ____                __
-    /\  _`\            /\ \  __            /\  _`\   __        /\ \
-    \ \ \L\ \     __   \_\ \/\_\    ____   \ \,\L\_\/\_\    ___\ \ \/'\ By Stefan Bocutiu
-     \ \ ,  /   /'__`\ /'_` \/\ \  /',__\   \/_\__ \\/\ \ /' _ `\ \ , <
-      \ \ \\ \ /\  __//\ \L\ \ \ \/\__, `\    /\ \L\ \ \ \/\ \/\ \ \ \\`\
-    \ \_\ \_\ \____\ \___,_\ \_\/\____/    \ `\____\ \_\ \_\ \_\ \_\ \_\
-        \/_/\/ /\/____/\/__,_ /\/_/\/___/      \/_____/\/_/\/_/\/_/\/_/\/_/
-           (com.datamountaineer.streamreactor.connect.redis.sink.RedisSinkTask:41)
     [2016-05-08 22:37:05,617] INFO RedisSinkConfig values:
         connect.redis.connection.port = 6379
         connect.redis.sink.fields = firstName,lastName,age,salary=income
@@ -224,20 +218,31 @@ Now the producer is waiting for input. Paste in the following:
 .. code:: bash
 
     {"firstName": "John", "lastName": "Smith", "age":30, "salary": 4830}
-    {"firstName": "Anna", "lastName": "Jones", "age":28, "salary": 5430}
 
 Check for records in Redis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now check the logs of the connector you should see this:
 
-... code:: bash
+.. code:: bash
+
+    INFO Received record from topic:person_redis partition:0 and offset:0 (com.datamountaineer.streamreactor.connect.redis.sink.writer.RedisDbWriter:48)
+    INFO Empty list of records received. (com.datamountaineer.streamreactor.connect.redis.sink.RedisSinkTask:75)
 
 Check the Redis.
 
 .. code:: bash
 
     redis-cli
+
+    127.0.0.1:6379> keys *
+    1) "John.Smith"
+    2) "11"
+    3) "10"
+    127.0.0.1:6379>
+    127.0.0.1:6379> get "John.Smith"
+    "{\"firstName\":\"John\",\"lastName\":\"Smith\",\"age\":30,\"income\":4830.0}"
+
 
 Now stop the connector.
 
