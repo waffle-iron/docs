@@ -63,7 +63,7 @@ Confluent Setup
 
 Enable topic deletion.
 
-In ``/etc/kafka/server.properties`` add the following to we can delete
+In ``/etc/kafka/server.properties`` add the following so we can delete
 topics.
 
 .. code:: bash
@@ -103,11 +103,9 @@ If you want to build the connector, clone the repo and build the jar.
 Source Connector
 ----------------
 
-The Cassandra source connector allows you to extract entries from
-Cassandra with the CQL driver and write them into a Kafka topic.
+The Cassandra source connector allows you to extract entries from Cassandra with the CQL driver and write them into a Kafka topic.
 
-Each table specified in the configuration is polled periodically and
-each record from the result is converted to a Kafka Connect record.
+Each table specified in the configuration is polled periodically and each record from the result is converted to a Kafka Connect record.
 These records are then written to Kafka by the Kafka Connect framework.
 
 The source connector operates in two modes:
@@ -116,27 +114,22 @@ The source connector operates in two modes:
 2. Incremental - Each table is querying with lower and upper bounds to
    extract deltas.
 
-In incremental mode the column used to identify new or delta rows has to
-be provided. This column must be of CQL Type Timestamp. Due to
-Cassandra's and CQL restrictions this should be a primary key or part of
-a composite primary keys. ALLOW\_FILTERING can also be supplied as an
+In incremental mode the column used to identify new or delta rows has to be provided. This column must be of CQL Type Timestamp. Due to
+Cassandra's and CQL restrictions this should be a primary key or part of a composite primary keys. ALLOW\_FILTERING can also be supplied as an
 configuration.
 
-.. note:: TimeUUIDs are convert to strings. Use the `UUIDs <https://docs.datastax.com/en/drivers/java/2.0/com/datastax/driver/core/utils/UUIDs.html>`__ helpers to convert to Dates.
+.. note:: TimeUUIDs are converted to strings. Use the `UUIDs <https://docs.datastax.com/en/drivers/java/2.0/com/datastax/driver/core/utils/UUIDs.html>`__ helpers to convert to Dates.
 
 Source Connector QuickStart
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To see the basic functionality of the Source connector we will start
-with the Bulk import mode.
+To see the basic functionality of the Source connector we will start with the Bulk import mode.
 
 Test data
 ^^^^^^^^^
 
-Once you have installed and started Cassandra create a table to extract
-records from. This snippet creates a table called orders and inserts 3
-rows representing fictional orders or some options and futures on a
-trading platform.
+Once you have installed and started Cassandra create a table to extract records from. This snippet creates a table called
+ orders and inserts 3 rows representing fictional orders or some options and futures on a trading platform.
 
 Start the Cassandra cql shell
 
@@ -155,7 +148,8 @@ Execute the following:
     CREATE KEYSPACE demo WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 3};
     use demo;
 
-    create table orders (id int, created timeuuid, product text, qty int, price float, PRIMARY KEY (id, created)) WITH CLUSTERING ORDER BY (created asc);
+    create table orders (id int, created timeuuid, product text, qty int, price float, PRIMARY KEY (id, created)) \
+    WITH CLUSTERING ORDER BY (created asc);
 
     INSERT INTO orders (id, created, product, qty, price) VALUES (1, now(), 'OP-DAX-P-20150201-95.7', 100, 94.2);
     INSERT INTO orders (id, created, product, qty, price) VALUES (2, now(), 'OP-DAX-C-20150201-100', 100, 99.5);
@@ -180,15 +174,11 @@ Next we start the connector in standalone mode. This useful for testing
 and one of jobs, usually you'd run in distributed mode to get fault
 tolerance and better performance.
 
-Before we can start the connector we need to setup it's configuration.
-In standalone mode this is done by creating a properties file and
-passing this to the connector at startup. In distributed mode you can
-post in the configuration as json to the Connectors HTTP endpoint. Each
-connector exposes a rest endpoint for stoping, starting and updating the
-configuration.
+Before we can start the connector we need to setup it's configuration. In standalone mode this is done by creating a
+properties file and passing this to the connector at startup. In distributed mode you can post in the configuration as
+json to the Connectors HTTP endpoint. Each connector exposes a rest endpoint for stoping, starting and updating the configuration.
 
-Since we are in standalone mode we'll create a file called
-cassandra-source-bulk-orders.properties with the contents below:
+Since we are in standalone mode we'll create a file called ``cassandra-source-bulk-orders.properties`` with the contents below:
 
 .. code:: bash
 
@@ -207,15 +197,12 @@ This configuration defines:
 1. The name of the connector, must be unique.
 2. The name of the connector class.
 3. The keyspace (demo) we are connecting to.
-4. The table to topic import map. This allows you to route tables to
-   different topics. Each mapping is comma separated and for each
-   mapping the table and topic are separated by a colon, if no topic is
-   provide the records from the table will be routed to a topic matching
-   the table name. In this example the orders table records are routed
-   to the topic orders-topic. This property sets the tables to import!
+4. The table to topic import map. This allows you to route tables to different topics. Each mapping is comma separated
+   and for each mapping the table and topic are separated by a colon, if no topic is provided the records from the table
+   will be routed to a topic matching the table name. In this example the orders table records are routed to the topic
+   orders-topic. This property sets the tables to import!
 5. The import mode, either incremental or bulk.
-6. The authentication mode, this is either none or username\_password.
-   We haven't enabled this on our Cassandra install but you should.
+6. The authentication mode, this is either none or username\_password. We haven't enabled this on our Cassandra install but you should.
 7. The ip or host name of the nodes in the Cassandra cluster to connect to.
 8. Username and password, ignored unless you have set Cassandra to use the PasswordAuthenticator.
 
@@ -224,16 +211,21 @@ Starting the Source Connector (Standalone)
 
 Now we are ready to start the Cassandra Source Connector in standalone mode.
 
-.. note:: You need to add the connector to your classpath or you can create a folder in share/java like kafka-connect-myconnector and the start scripts provided by Confluent will pick it up. The start script looks for folders beginning with kafka-connect.
+.. note::
+
+    You need to add the connector to your classpath or you can create a folder in ``share/java`` of the Confluent
+    install location like, kafka-connect-myconnector and the start scripts provided by Confluent will pick it up.
+    The start script looks for folders beginning with kafka-connect.
 
 .. code:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-cassandra-0.1-all.jar
-    #Start the connector in standalone mode, passing in two properties files, the first for the schema registry, kafka and zookeeper and the second with the connector properties.
+    #Start the connector in standalone mode, passing in two properties files, the first for the schema registry, kafka
+    #and zookeeper and the second with the connector properties.
     ➜  bin/connect-standalone etc/schema-registry/connect-avro-standalone.properties cassandra-source-bulk-orders.properties
 
-We can use the CLI to check if the connector is up but you should be able to see this in logs as-well.
+We can use the CLI to check if the connector is up but you should be able to see this in logs.
 
 .. code:: bash
 
@@ -253,7 +245,7 @@ We can use the CLI to check if the connector is up but you should be able to see
 Check for Source Records in Kafka
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now check the logs of the connector you should see this
+Now check the logs of the connector you should see this:
 
 .. code:: bash
 
@@ -293,7 +285,10 @@ We can then use the kafka-avro-console-consumer to see what's in the kafka topic
 
 .. code:: bash
 
-    ➜  confluent-2.0.1/bin/kafka-avro-console-consumer --zookeeper localhost:2181 --topic orders-topic --from-beginning 
+    ➜  confluent-2.0.1/bin/kafka-avro-console-consumer \
+    --zookeeper localhost:2181 \
+    --topic orders-topic \
+    --from-beginning
     {"id":{"int":1},"created":{"string":"17fa1050-137e-11e6-ab60-c9fbe0223a8f"},"price":{"float":94.2},"product":{"string":"OP-DAX-P-20150201-95.7"},"qty":{"int":100}}
     {"id":{"int":2},"created":{"string":"17fb6fe0-137e-11e6-ab60-c9fbe0223a8f"},"price":{"float":99.5},"product":{"string":"OP-DAX-C-20150201-100"},"qty":{"int":100}}
     {"id":{"int":3},"created":{"string":"17fbbe00-137e-11e6-ab60-c9fbe0223a8f"},"price":{"float":150.0},"product":{"string":"FU-KOSPI-C-20150201-100"},"qty":{"int":200}}
@@ -302,7 +297,10 @@ We can then use the kafka-avro-console-consumer to see what's in the kafka topic
 
 Now stop the connector.
 
-.. note:: Next time the Connector polls another 3 would be pulled in. In our example the default poll interval is set to 1 minute. So in 1 minute we'd get rows again.
+.. note::
+
+    Next time the Connector polls another 3 would be pulled in. In our example the default poll interval is set to
+    1 minute. So in 1 minute we'd get rows again.
 
 .. note:: The created field in a TimeUUID is Cassandra, this represented as a string in the Kafka Connect schema.
 
@@ -310,31 +308,33 @@ Now stop the connector.
 Source Connector Configuration (Incremental)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The configuration is similar to before but this time well perform an
-incremental load. Below is the configuration. Create a file called
-cassandra-source-incr-orders.properties and add the following
-content:
+The configuration is similar to before but this time we will perform an incremental load. Below is the configuration.
+Create a file called ``cassandra-source-incr-orders.properties`` and add the following content:
 
 .. code:: bash
 
     name=cassandra-source-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
-    cassandra.key.space=demo
-    cassandra.import.map=orders:orders-topic
-    cassandra.import.timestamp.column=orders:created
-    cassandra.import.mode=incremental
-    cassandra.authentication.mode=username_password
-    cassandra.contact.points=localhost
-    cassandra.username=cassandra
-    cassandra.password=cassandra
+    connect.cassandra.key.space=demo
+    connect.cassandra.import.map=orders:orders-topic
+    connect.cassandra.import.timestamp.column=orders:created
+    connect.cassandra.import.mode=incremental
+    connect.cassandra.authentication.mode=username_password
+    connect.cassandra.contact.points=localhost
+    connect.cassandra.username=cassandra
+    connect.cassandra.password=cassandra
 
 There are two changes from the previous configuration:
 
-1. ``cassandra.import.timestamp.column`` has been added to identify the
+1. ``connect.cassandra.import.timestamp.column`` has been added to identify the
    column used in the where clause with the lower and upper bounds.
-2. The ``cassandra.import.mode`` has been set to ``incremental``.
+2. The ``connect.cassandra.import.mode`` has been set to ``incremental``.
 
-.. note:: Only Cassandra columns with data type Timeuuid are supported for incremental mode. The column must also be either the primary key or part of the compound key. If it's part of the compound key this will introduce a full scan with ALLOW\_FILTERING added to the query.
+.. note::
+
+    Only Cassandra columns with data type Timeuuid are supported for incremental mode. The column must also be either
+    the primary key or part of the compound key. If it's part of the compound key this will introduce a full scan with
+    ALLOW\_FILTERING added to the query.
 
 We can reuse the 3 records inserted into Cassandra earlier but lets clean out the target Kafka topic.
 
@@ -348,9 +348,8 @@ We can reuse the 3 records inserted into Cassandra earlier but lets clean out th
 Starting the Connector (Distributed)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Connectors can be deployed distributed mode. In this mode one or many
-connectors are started on the same or different hosts with the same
-cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties``.
+Connectors can be deployed distributed mode. In this mode one or many connectors are started on the same or different
+hosts with the same cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties``.
 
 .. code:: bash
 
@@ -360,16 +359,14 @@ cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-di
 
 For this quick-start we will just use one host.
 
-Now start the connector in distributed mode, this time we only give it
-one properties file for the kafka, zookeeper and schema registry
-configurations.
+Now start the connector in distributed mode, this time we only give it one properties file for the kafka, zookeeper
+and schema registry configurations.
 
 .. code:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed confluent-2.0.1/etc/schema-registry/connect-avro-distributed.properties
 
-Once the connector has started lets use the kafka-connect-tools cli to
-post in our incremental properties file.
+Once the connector has started lets use the kafka-connect-tools cli to post in our incremental properties file.
 
 .. code:: bash
 
@@ -388,9 +385,8 @@ post in our incremental properties file.
     connect.cassandra.import.timestamp.column=orders:created
     #task ids: 0
 
-If you switch back to the terminal you started the Connector in you
-should see the Cassandra Source being accepted and the task starting and
-processing the 3 existing rows.
+If you switch back to the terminal you started the Connector in you should see the Cassandra Source being accepted and
+the task starting and processing the 3 existing rows.
 
 .. code:: bash
 
@@ -413,7 +409,10 @@ Check Kafka, 3 rows as before.
 
 .. code:: bash
 
-    ➜  confluent-2.0.1/bin/kafka-avro-console-consumer --zookeeper localhost:2181 --topic orders-topic --from-beginning 
+    ➜  confluent-2.0.1/bin/kafka-avro-console-consumer \
+    --zookeeper localhost:2181 \
+    --topic orders-topic \
+    --from-beginning
     {"id":{"int":1},"created":{"string":"Thu May 05 13:24:22 CEST 2016"},"price":{"float":94.2},"product":{"string":"DAX-P-20150201-95.7"},"qty":{"int":100}}
     {"id":{"int":2},"created":{"string":"Thu May 05 13:26:21 CEST 2016"},"price":{"float":99.5},"product":{"string":"OP-DAX-C-20150201-100"},"qty":{"int":100}}
     {"id":{"int":3},"created":{"string":"Thu May 05 13:26:44 CEST 2016"},"price":{"float":150.0},"product":{"string":"FU-KOSPI-C-20150201-100"},"qty":{"int":200}}
@@ -471,9 +470,11 @@ Check Kafka.
 
 .. code:: bash
 
-    ➜  confluent confluent-2.0.1/bin/kafka-avro-console-consumer --zookeeper localhost:2181 --topic orders-topic --from-beginning
-    SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-    SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]
+    ➜  confluent confluent-2.0.1/bin/kafka-avro-console-consumer \
+    --zookeeper localhost:2181 \
+    --topic orders-topic \
+    --from-beginning
+
     {"id":{"int":1},"created":{"string":"17fa1050-137e-11e6-ab60-c9fbe0223a8f"},"price":{"float":94.2},"product":{"string":"OP-DAX-P-20150201-95.7"},"qty":{"int":100}}
     {"id":{"int":2},"created":{"string":"17fb6fe0-137e-11e6-ab60-c9fbe0223a8f"},"price":{"float":99.5},"product":{"string":"OP-DAX-C-20150201-100"},"qty":{"int":100}}
     {"id":{"int":3},"created":{"string":"17fbbe00-137e-11e6-ab60-c9fbe0223a8f"},"price":{"float":150.0},"product":{"string":"FU-KOSPI-C-20150201-100"},"qty":{"int":200}}
@@ -486,11 +487,10 @@ Sink Connector
 
 The Cassandra Sink allows you to write events from Kafka to Cassandra.
 
-The connector converts the value from the Kafka Connect SinkRecords to
-Json and uses Cassandra's JSON insert functionality to insert the rows.
+The connector converts the value from the Kafka Connect SinkRecords to Json and uses Cassandra's JSON insert
+functionality to insert the rows.
 
-The task expects pre-created tables in Cassandra. Like the source
-connector the sink allows mapping of topics to tables.
+The task expects pre-created tables in Cassandra. Like the source connector the sink allows mapping of topics to tables.
 
 .. note:: The table and keyspace must be created before hand! 
 .. note:: If the target table has TimeUUID fields the payload string for the corresponding field in Kafka must be a UUID.
@@ -505,8 +505,7 @@ source.
 Sink Connector Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The sink configuration is similar to the source, they share most of the
-same configuration options. Create a file called
+The sink configuration is similar to the source, they share most of the same configuration options. Create a file called
 cassandra-sink-distributed-orders.properties with contents below.
 
 .. code:: bash
@@ -523,14 +522,12 @@ cassandra-sink-distributed-orders.properties with contents below.
     connect.cassandra.username=cassandra
     connect.cassandra.password=cassandra
 
-The main difference here is the *cassandra.export.map*. This like the
-source connector but reversed is comma separated list of topic to table
-mappings. The mapping for each element in the list is separate by a
-colon. The topic is before and the table after the colon. In this
-example the routing is orders-topic to the orders\_write\_back table in
+The main difference here is the *cassandra.export.map*. This like the source connector but reversed. This is comma
+separated list of topic to table mappings. The mapping for each element in the list is separate by a `:`. The topic is
+before and the table after the colon. In this example the routing is orders-topic to the orders\_write\_back table in
 Cassandra.
 
-Additional we must supply the topics configuration option.
+Additionally we must supply the topics configuration option for the framework.
 
 .. note:: All tables must be in the same keyspace.
 
@@ -539,14 +536,13 @@ Additional we must supply the topics configuration option.
 Cassandra Tables
 ^^^^^^^^^^^^^^^^
 
-The sink expects the tables it's configured to write to are already
-present in Cassandra. Lets create our table for the sink.
+The sink expects the tables it's configured to write to are already present in Cassandra. Lets create our table for the sink.
 
 .. code:: bash
 
-
     use demo;
-    create table orders_write_back (id int, created timeuuid, product text, qty int, price float, PRIMARY KEY (id, created)) WITH CLUSTERING ORDER BY (created asc);
+    create table orders_write_back (id int, created timeuuid, product text, qty int, price float, PRIMARY KEY \
+    (id, created)) WITH CLUSTERING ORDER BY (created asc);
     SELECT * FROM orders_write_back;
 
      id | created | price | product | qty
@@ -564,8 +560,7 @@ Again will start in distributed mode.
 
     ➜  confluent-2.0.1/bin/connect-distributed etc/schema-registry/connect-avro-distributed.properties 
 
-Once the connector has started lets use the kafka-connect-tools cli to
-post in our distributed properties file.
+Once the connector has started lets use the kafka-connect-tools cli to post in our distributed properties file.
 
 .. code:: bash
 
@@ -634,10 +629,9 @@ Bingo, our 4 rows!
 Features
 --------
 
-Both the source and sink connector use Cassandra's executeAysnc
-function. This is non blocking. For the source, the when the result
-returns it is iterated over and rows added to a internal queue. This
-queue is then drained by the connector and written to Kafka.
+Both the source and sink connector use Cassandra's executeAysnc functionality. This is non blocking. For the source,
+the when the result returns it is iterated over and rows added to a internal queue. This queue is then drained by the
+connector and written to Kafka.
 
 Source Connector
 ~~~~~~~~~~~~~~~~
@@ -645,8 +639,7 @@ Source Connector
 Data Types
 ^^^^^^^^^^
 
-The source connector supports copying tables in bulk and incrementally
-to Kafka.
+The source connector supports copying tables in bulk and incrementally to Kafka.
 
 The following CQL data types are supported:
 
@@ -709,72 +702,60 @@ Modes
 
 The source connector runs in both bulk and incremental mode.
 
-Each mode has a polling interval. This interval determines how often the
-readers execute queries against the Cassandra tables. It applies to both
-incremental and bulk modes. The ``cassandra.import.mode`` setting
-controls the import behaviour.
+Each mode has a polling interval. This interval determines how often the readers execute queries against the Cassandra
+tables. It applies to both incremental and bulk modes. The ``cassandra.import.mode`` setting controls the import behaviour.
 
 Incremental
 '''''''''''
 
-In ``incremental`` mode the connector supports querying based on a
-column in the tables with CQL data type of TimeUUID.
+In ``incremental`` mode the connector supports querying based on a column in the tables with CQL data type of TimeUUID.
 
-Kafka Connect tracks the latest record it retrieved from each table, so
-it can start at the correct location on the next iteration (or in case
-of a crash). In this case the maximum value of the records returned by
-the result-set is tracked and stored in Kafka by the framework. If no
-offset is found for the table at startup a default timestamp of
-1900-01-01 is used. This is then passed to a prepared statement
-containing a range query.
-
-.e.g
+Kafka Connect tracks the latest record it retrieved from each table, so it can start at the correct location on the next
+iteration (or in case of a crash). In this case the maximum value of the records returned by the result-set is tracked
+and stored in Kafka by the framework. If no offset is found for the table at startup a default timestamp of 1900-01-01
+is used. This is then passed to a prepared statement containing a range query. For example:
 
 .. code:: sql
 
     SELECT * FROM demo.orders WHERE created > maxTimeuuid(?) AND created <= minTimeuuid(?)
 
-.. note:: ! If the column used for tracking timestamps is a compound key,ALLOW FILTERING is appended to the query. This can have a detrimental performance impact of Cassandra as it is effectively issuing a full scan.
+.. warning::::
+
+    If the column used for tracking timestamps is a compound key,ALLOW FILTERING is appended to the query.
+    This can have a detrimental performance impact of Cassandra as it is effectively issuing a full scan.
 
 Bulk
 ''''
 
-In ``bulk`` mode the connector extracts the full table, no where clause
-is attached to the query.
+In ``bulk`` mode the connector extracts the full table, no where clause is attached to the query.
 
-.. note:: ! Watch out with the poll interval. After each interval the bulk query will be executed again.
+.. warning::
+
+    Watch out with the poll interval. After each interval the bulk query will be executed again.
 
 Mappings
 ^^^^^^^^
 
-The source connector supports mapping of tables to columns. This is
-controlled via the ``cassandra.import.table.map`` configuration option.
-This option expects a comma separated list of mappings of table to
-topic, separated by a colon. If no topic is provided the table name is
-used.
+The source connector supports mapping of tables to columns. This is controlled via the ``cassandra.import.table.map``
+configuration option. This option expects a comma separated list of mappings of table to topic, separated by a colon.
+If no topic is provided the table name is used.
 
 Sink Connector
 ~~~~~~~~~~~~~~
 
-The sink connector uses Cassandra's
-`JSON <http://www.datastax.com/dev/blog/whats-new-in-cassandra-2-2-json-support>`__
+The sink connector uses Cassandra's `JSON <http://www.datastax.com/dev/blog/whats-new-in-cassandra-2-2-json-support>`__
 insert functionality.
 
-The SinkRecord from Kafka connect is converted to JSON and feed into the
-prepared statements for inserting into Cassandra.
+The SinkRecord from Kafka connect is converted to JSON and feed into the prepared statements for inserting into Cassandra.
 
-See DataStax's
-`documentation <http://cassandra.apache.org/doc/cql3/CQL-2.2.html#insertJson>`__
-for type mapping.
+See DataStax's `documentation <http://cassandra.apache.org/doc/cql3/CQL-2.2.html#insertJson>`__ for type mapping.
 
 Mappings
 ^^^^^^^^
 
-The sink connector supports mapping of topics to tables. This is
-controlled via the ``cassandra.export.topic.table.map`` configuration
-option. This option expects a comma separated list of mappings of topic
-to table, separated by a colon. If no table is provided the topic name
-is used.
+The sink connector supports mapping of topics to tables. This is controlled via the ``cassandra.export.topic.table.map``
+configuration option. This option expects a comma separated list of mappings of topic to table, separated by a colon.
+If no table is provided the topic name is used.
 
 Configurations
 --------------
@@ -826,9 +807,6 @@ Configurations common to both sink and source are:
 |                                   |           |          || be set. Default false.        |
 +-----------------------------------+-----------+----------+--------------------------------+
 
-
-
-
 Source Connector Configurations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -854,8 +832,8 @@ Configurations options specific to the source connector are:
 |                                 |           |          || MUST BE OF TYPE TIMEUUID        |
 +---------------------------------+-----------+----------+----------------------------------+
 || connect.cassandra.import.      | String    | Yes      || Table to Topic map for import in|
-|| table.map                      |           |          || format table1=topic1,           |
-|                                 |           |          || table2=topic2, if the topic left|
+|| table.map                      |           |          || format table1:topic1,           |
+|                                 |           |          || table2:topic2, if the topic left|
 |                                 |           |          || blank table name is used.       |
 +---------------------------------+-----------+----------+----------------------------------+
 || connect.cassandra.import.      | String    | No       || Enable ALLOW FILTERING in       |
@@ -939,7 +917,15 @@ Example
 Schema Evolution
 ----------------
 
-TODO
+For the source connector all columns are selected from the table and the connector converts and builds a SourceRecord to
+inject into Kafka. Addition and removal of columns in the source are handled inline with settings of the Schema Registry.
+
+See `this <http://docs.confluent.io/2.0.1/schema-registry/docs/intro.html>`_ for more information on the Schema Registry.
+
+For the Sink connector, if columns are add to the target Cassandra table and not present in the source topic they will be
+set to null by Cassandras Json insert functionality. Columns which are omitted from the JSON value map are treated as a
+null insert (which results in an existing value being deleted, if one is present), if a record with the same key is
+inserted again.
 
 Deployment Guidelines
 ---------------------

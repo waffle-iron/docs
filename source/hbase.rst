@@ -1,7 +1,8 @@
 Kafka Connect HBase
 ===================
 
-A Connector and Sink to write events from Kafka to HBase. The connector takes the value from the Kafka Connect SinkRecords and inserts a new entry to HBase.
+A Connector and Sink to write events from Kafka to HBase. The connector takes the value from the Kafka Connect SinkRecords
+and inserts a new entry to HBase.
 
 Prerequisites
 -------------
@@ -33,8 +34,7 @@ Confluent Setup
 
 Enable topic deletion.
 
-In ``/etc/kafka/server.properties`` add the following to we can delete
-topics.
+In ``/etc/kafka/server.properties`` add the following so we can delete topics.
 
 .. code:: bash
 
@@ -139,19 +139,15 @@ The sink expects a precreated table in HBase. In the HBase shell create the test
 Sink Connector Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Next we start the connector in standalone mode. This useful for testing
-and one of jobs, usually you'd run in distributed mode to get fault
-tolerance and better performance.
+Next we start the connector in standalone mode. This useful for testing and one of jobs, usually you'd run in distributed
+mode to get fault tolerance and better performance.
 
-Before we can start the connector we need to setup it's configuration.
-In standalone mode this is done by creating a properties file and
-passing this to the connector at startup. In distributed mode you can
-post in the configuration as json to the Connectors HTTP endpoint. Each
-connector exposes a rest endpoint for stopping, starting and updating the
+Before we can start the connector we need to setup it's configuration. In standalone mode this is done by creating a
+properties file and passing this to the connector at startup. In distributed mode you can post in the configuration as
+json to the Connectors HTTP endpoint. Each connector exposes a rest endpoint for stopping, starting and updating the
 configuration.
 
-Since we are in standalone mode we'll create a file called
-hbase-sink.properties with the contents below:
+Since we are in standalone mode we'll create a file called ``hbase-sink.properties`` with the contents below:
 
 .. code:: bash
 
@@ -168,7 +164,9 @@ hbase-sink.properties with the contents below:
 This configuration defines:
 
 1.  The name of the sink.
-2.  The key mode. There are three available modes: SINK_RECORD, FIELDS and GENERIC. SINK_RECORD, uses the SinkRecord.keyValue as the hbase row key, FIELDS, combines the specified payload (kafka connect Struct instance) fields to make up the HBase row key ,GENERIC, combines the kafka topic, offset and partition to build the hbase row key.
+2.  The key mode. There are three available modes: SINK_RECORD, FIELDS and GENERIC. SINK_RECORD, uses the
+    SinkRecord.keyValue as the hbase row key, FIELDS, combines the specified payload (kafka connect Struct instance)
+    fields to make up the HBase row key ,GENERIC, combines the kafka topic, offset and partition to build the hbase row key.
 3.  The fields to extract from the source topics payload.
 4.  The sink class.
 5.  The max number of tasks the connector is allowed to created. Should not be greater than the number of partitions in the source topics
@@ -183,13 +181,18 @@ Starting the Sink Connector (Standalone)
 
 Now we are ready to start the hbase sink Connector in standalone mode.
 
-.. note:: You need to add the connector to your classpath or you can create a folder in share/java like kafka-connect-myconnector and the start scripts provided by Confluent will pick it up. The start script looks for folders beginning with kafka-connect.
+.. note::
+
+    You need to add the connector to your classpath or you can create a folder in ``share/java`` of the Confluent
+    install location like, kafka-connect-myconnector and the start scripts provided by Confluent will pick it up.
+    The start script looks for folders beginning with kafka-connect.
 
 .. code:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-hbase-0.1-all.jar
-    #Start the connector in standalone mode, passing in two properties files, the first for the schema registry, kafka and zookeeper and the second with the connector properties.
+    #Start the connector in standalone mode, passing in two properties files, the first for the schema registry, kafka
+    #and zookeeper and the second with the connector properties.
     ➜  bin/connect-standalone etc/schema-registry/connect-avro-standalone.properties hbase-sink.properties
 
 We can use the CLI to check if the connector is up but you should be able to see this in logs as-well.
@@ -231,7 +234,9 @@ a ``lastnamme`` field of type string, an ``age`` field of type int and a ``salar
 
     bin/kafka-avro-console-producer \
       --broker-list localhost:9092 --topic person_hbase \
-      --property value.schema='{"type":"record","name":"User","namespace":"com.datamountaineer.streamreactor.connect.redis","fields":[{"name":"firstName","type":"string"},{"name":"lastName","type":"string"},{"name":"age","type":"int"},{"name":"salary","type":"double"}]}'
+      --property value.schema='{"type":"record","name":"User","namespace":"com.datamountaineer.streamreactor.connect.redis", \
+      "fields":[{"name":"firstName","type":"string"},{"name":"lastName","type":"string"},{"name":"age","type":"int"}, \
+      {"name":"salary","type":"double"}]}'
 
 Now the producer is waiting for input. Paste in the following:
 
@@ -271,9 +276,8 @@ Now stop the connector.
 Starting the Connector (Distributed)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Connectors can be deployed distributed mode. In this mode one or many
-connectors are started on the same or different hosts with the same cluster id.
-The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties.``
+Connectors can be deployed distributed mode. In this mode one or many connectors are started on the same or different
+hosts with the same cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties.``
 
 .. code:: bash
 
@@ -283,16 +287,14 @@ The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.pr
 
 For this quick-start we will just use one host.
 
-Now start the connector in distributed mode, this time we only give it
-one properties file for the kafka, zookeeper and schema registry
-configurations.
+Now start the connector in distributed mode, this time we only give it one properties file for the kafka, zookeeper and
+schema registry configurations.
 
 .. code:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed confluent-2.0.1/etc/schema-registry/connect-avro-distributed.properties
 
-Once the connector has started lets use the kafka-connect-tools cli to
-post in our distributed properties file.
+Once the connector has started lets use the kafka-connect-tools cli to post in our distributed properties file.
 
 .. code:: bash
 
@@ -311,7 +313,8 @@ The sink supports:
 
 1. Key modes - Allows for custom or automatic HBase key generation. You can specify fields in the topic payload to
    concatenate to form the key, write this a s string or Avro, or have the sink take the key value from the Kafka message.
-2. Field selection - Kafka topic payload field selection is supported, allowing you to have choose selection of fields  or all fields written to hbase.
+2. Field selection - Kafka topic payload field selection is supported, allowing you to have choose selection of fields
+   or all fields written to hbase.
 
 Configurations
 --------------
