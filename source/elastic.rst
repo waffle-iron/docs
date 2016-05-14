@@ -318,10 +318,18 @@ Example
 Schema Evolution
 ----------------
 
+Upstream changes to schemas are handled by Schema registry which will validate the addition and removal
+or fields, data type changes and if defaults are set. The Schema Registry enforces Avro schema evolution rules.
+More information can be found `here <http://docs.confluent.io/2.0.1/schema-registry/docs/api.html#compatibility>`_.
+
 Elastic Search is very flexible about what is inserted. All documents in Elasticsearch are stored in an index. We do not
 need to tell Elasticsearch in advance what an index will look like (eg what fields it will contain) as Elasticsearch will
 adapt the index dynamically as more documents are added, but we must at least create the index first. The Sink connector
 automatically creates the index at start up if it doesn't exist.
+
+The Elastic Search sink will automatically index if new fields are added to the source topic, if fields are removed
+the Kafka Connect framework will return the default value for this field, dependent of the compatibility settings of the
+Schema registry.
 
 
 Deployment Guidelines

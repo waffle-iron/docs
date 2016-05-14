@@ -165,9 +165,6 @@ If we query Druid:
 
 ... code:: bash
 
-
-
-
 Starting the Connector (Distributed)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

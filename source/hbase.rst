@@ -314,7 +314,7 @@ The sink supports:
 1. Key modes - Allows for custom or automatic HBase key generation. You can specify fields in the topic payload to
    concatenate to form the key, write this a s string or Avro, or have the sink take the key value from the Kafka message.
 2. Field selection - Kafka topic payload field selection is supported, allowing you to have choose selection of fields
-   or all fields written to hbase.
+   or all fields written to HBase.
 
 Configurations
 --------------
@@ -389,7 +389,14 @@ Example
 Schema Evolution
 ----------------
 
-TODO
+Upstream changes to schemas are handled by Schema registry which will validate the addition and removal
+or fields, data type changes and if defaults are set. The Schema Registry enforces Avro schema evolution rules.
+More information can be found `here <http://docs.confluent.io/2.0.1/schema-registry/docs/api.html#compatibility>`_.
+
+The HBase sink will automatically write and update the HBase table if new fields are added to the source topic,
+if fields are removed the Kafka Connect framework will return the default value for this field, dependent of the
+compatibility settings of the Schema registry. This value will be put into the HBase column family cell based on the
+``connect.hbase.sink.fields`` mappings.
 
 Deployment Guidelines
 ---------------------

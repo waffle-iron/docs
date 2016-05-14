@@ -57,14 +57,16 @@ are available. But first we need some data in Kafka. Start the console producer 
 
     ➜   bin/kafka-avro-console-producer \
       --broker-list localhost:9092 --topic socket_streamer \
-      --property value.schema='{"type":"record","name":"User","namespace":"com.datamountaineer.streamreactor.connect.redis","fields":[{"name":"firstName","type":"string"},{"name":"lastName","type":"string"},{"name":"age","type":"int"},{"name":"salary","type":"double"}]}'
+      --property value.schema='{"type":"record","name":"User","namespace":"com.datamountaineer.streamreactor.connect.redis" \
+      ,"fields":[{"name":"firstName","type":"string"},{"name":"lastName","type":"string"},{"name":"age","type":"int"}, \
+      {"name":"salary","type":"double"}]}'
 
     {"firstName": "John", "lastName": "Smith", "age":30, "salary": 4830}
     {"firstName": "Max", "lastName": "Power", "age":30, "salary": 1000000}
 
 
-Now start the socket streamer. We need to set some configurations first. The socket-streamer uses Typesafe's configuration loader
-so we can create a file called ``application.conf`` and add the following.
+Now start the socket streamer. We need to set some configurations first. The socket-streamer uses Typesafe's configuration
+loader so we can create a file called ``application.conf`` and add the following.
 
 .. code:: bash
 
@@ -117,8 +119,8 @@ Now lets have the socket streamer push use server send event by simply calling c
     data:{"value":"{\"firstName\": \"Max\", \"Power\": \"Jones\", \"age\": 30, \"salary\": 1000000}"}
     data:{"timestamp":"Thu May 12 16:42:02 CEST 2016","system":"streamreactor-socket-streamer","message":"heartbeat"}
 
-For websockets, install a websocket client, for example `Dark WebSocket Terminal <http://tinyurl.com/nqc9s3c>`_. Start it and connect to the websocket endpoint.
-
+For websockets, install a websocket client, for example `Dark WebSocket Terminal <http://tinyurl.com/nqc9s3c>`_. Start
+it and connect to the websocket endpoint.
 
 .. note:: Dark Terminal, for some reason, needs a extra whitespace at the end of the connection url to work.
 

@@ -917,15 +917,19 @@ Example
 Schema Evolution
 ----------------
 
-For the source connector all columns are selected from the table and the connector converts and builds a SourceRecord to
-inject into Kafka. Addition and removal of columns in the source are handled inline with settings of the Schema Registry.
-
-See `this <http://docs.confluent.io/2.0.1/schema-registry/docs/intro.html>`_ for more information on the Schema Registry.
+Upstream changes to schemas are handled by Schema registry which will validate the addition and removal or fields,
+data type changes and if defaults are set. The Schema Registry enforces Avro schema evolution rules. More information
+can be found `here <http://docs.confluent.io/2.0.1/schema-registry/docs/api.html#compatibility>`_.
 
 For the Sink connector, if columns are add to the target Cassandra table and not present in the source topic they will be
 set to null by Cassandras Json insert functionality. Columns which are omitted from the JSON value map are treated as a
 null insert (which results in an existing value being deleted, if one is present), if a record with the same key is
 inserted again.
+
+For the Source connector, at present no column selection is handled, every column from the table is queried to column
+additions and deletions are handled in accordance with the compatibility mode of the Schema Registry.
+
+Future releases will support auto creation of tables and adding columns on changes to the topic schema.
 
 Deployment Guidelines
 ---------------------
