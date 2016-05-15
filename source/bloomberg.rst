@@ -1,4 +1,4 @@
-**WORKING IN PROGRESS**
+**DOCS ARE WORKING IN PROGRESS**
 
 
 Kafka Connect Bloomberg
