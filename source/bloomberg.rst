@@ -1,6 +1,5 @@
 **DOCS ARE WORKING IN PROGRESS**
 
-
 Kafka Connect Bloomberg
 =======================
 
