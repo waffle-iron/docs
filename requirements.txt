@@ -1,2 +1,2 @@
-pip install sphinxcontrib-scaladomain
-pip install sphinxcontrib-httpdomain
+sphinxcontrib-scaladomain
+sphinxcontrib-httpdomain
