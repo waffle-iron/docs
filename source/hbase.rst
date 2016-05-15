@@ -18,7 +18,7 @@ Setup
 Confluent Setup
 ~~~~~~~~~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     #make confluent home folder
     mkdir confluent
@@ -36,13 +36,13 @@ Enable topic deletion.
 
 In ``/etc/kafka/server.properties`` add the following so we can delete topics.
 
-.. code:: bash
+.. sourcecode:: bash
 
     delete.topic.enable=true
 
 Start the Confluent platform.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Start the confluent platform, we need kafka, zookeeper and the schema registry
     bin/zookeeper-server-start etc/kafka/zookeeper.properties &
@@ -54,7 +54,7 @@ HBase Setup
 
 Download and extract HBase:
 
-.. code:: bash
+.. sourcecode:: bash
 
     wget https://www.apache.org/dist/hbase/1.2.1/hbase-1.2.1-bin.tar.gz
     tar -xvf hbase-1.2.1-bin.tar.gz -C hbase
@@ -62,7 +62,7 @@ Download and extract HBase:
 
 Edit ``conf/hbase-site.xml`` and add the following content:
 
-.. code:: bash
+.. sourcecode:: html
 
     <?xml version="1.0"?>
     <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
@@ -86,7 +86,7 @@ this case we want to use Confluents.
 
 Now start HBase and check the logs to ensure it's up:
 
-.. code:: bash
+.. sourcecode:: bash
 
     bin/start-hbase.sh
 
@@ -99,7 +99,7 @@ or from `Maven <http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22kafka-connect-
 
 If you want to build the connector, clone the repo and build the jar.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ##Build the connectors
     git clone https://github.com/datamountaineer/stream-reactor
@@ -119,7 +119,7 @@ HBase Table
 
 The sink expects a precreated table in HBase. In the HBase shell create the test table, go to your HBase install location.
 
-.. code:: bash
+.. sourcecode:: bash
 
     bin/hbase shell
     hbase(main):001:0> create 'person_hbase',{NAME=>'d', VERSIONS=>1}
@@ -129,7 +129,7 @@ The sink expects a precreated table in HBase. In the HBase shell create the test
     1 row(s) in 0.9530 seconds
 
     hbase(main):002:0> describe 'person'
-    DESCRIPTION                                                                                                                           ENABLED
+    DESCRIPTION
      'person', {NAME => 'd', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'false', DATA_BLOCK_ENCOD true
      ING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION
      _SCOPE => '0'}
@@ -149,7 +149,7 @@ configuration.
 
 Since we are in standalone mode we'll create a file called ``hbase-sink.properties`` with the contents below:
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=person-hbase-test
     connect.hbase.sink.rowkey.mode=FIELDS
@@ -187,7 +187,7 @@ Now we are ready to start the hbase sink Connector in standalone mode.
     install location like, kafka-connect-myconnector and the start scripts provided by Confluent will pick it up.
     The start script looks for folders beginning with kafka-connect.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-hbase-0.1-all.jar
@@ -197,7 +197,7 @@ Now we are ready to start the hbase sink Connector in standalone mode.
 
 We can use the CLI to check if the connector is up but you should be able to see this in logs as-well.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get hbase-sink
 
@@ -230,17 +230,17 @@ Now we need to put some records it to the test_table topics. We can use the ``ka
 Start the producer and pass in a schema to register in the Schema Registry. The schema has a ``firstname`` field of type string
 a ``lastnamme`` field of type string, an ``age`` field of type int and a ``salary`` field of type double.
 
-.. code:: bash
+.. sourcecode:: bash
 
     bin/kafka-avro-console-producer \
       --broker-list localhost:9092 --topic person_hbase \
-      --property value.schema='{"type":"record","name":"User","namespace":"com.datamountaineer.streamreactor.connect.redis", \
-      "fields":[{"name":"firstName","type":"string"},{"name":"lastName","type":"string"},{"name":"age","type":"int"}, \
+      --property value.schema='{"type":"record","name":"User","namespace":"com.datamountaineer.streamreactor.connect.hbase"
+      "fields":[{"name":"firstName","type":"string"},{"name":"lastName","type":"string"},{"name":"age","type":"int"},
       {"name":"salary","type":"double"}]}'
 
 Now the producer is waiting for input. Paste in the following:
 
-.. code:: bash
+.. sourcecode:: bash
 
     {"firstName": "John", "lastName": "Smith", "age":30, "salary": 4830}
     {"firstName": "Anna", "lastName": "Jones", "age":28, "salary": 5430}
@@ -250,14 +250,14 @@ Check for records in HBase
 
 Now check the logs of the connector you should see this
 
-.. code:: bash
+.. sourcecode:: bash
 
     INFO Sink task org.apache.kafka.connect.runtime.WorkerSinkTask@48ffb4dc finished initialization and start (org.apache.kafka.connect.runtime.WorkerSinkTask:155)
     INFO Writing 2 rows to Hbase... (com.datamountaineer.streamreactor.connect.hbase.writers.HbaseWriter:83)
 
 In HBase:
 
-.. code:: bash
+.. sourcecode:: bash
 
     hbase(main):004:0* scan 'person_hbase'
     ROW                                                  COLUMN+CELL
@@ -279,7 +279,7 @@ Starting the Connector (Distributed)
 Connectors can be deployed distributed mode. In this mode one or many connectors are started on the same or different
 hosts with the same cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties.``
 
-.. code:: bash
+.. sourcecode:: bash
 
     # The group ID is a unique identifier for the set of workers that form a single Kafka Connect
     # cluster
@@ -290,13 +290,13 @@ For this quick-start we will just use one host.
 Now start the connector in distributed mode, this time we only give it one properties file for the kafka, zookeeper and
 schema registry configurations.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed confluent-2.0.1/etc/schema-registry/connect-avro-distributed.properties
 
 Once the connector has started lets use the kafka-connect-tools cli to post in our distributed properties file.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  java -jar build/libs/kafka-connect-cli-0.2-all.jar create hbase-sink < hbase-sink.properties
 
@@ -374,7 +374,7 @@ Configurations
 Example
 ~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     connect.hbase.sink.rowkey.mode=FIELDS
     connect.hbase.sink.table.name=person

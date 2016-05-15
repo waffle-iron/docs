@@ -21,14 +21,14 @@ Kudu Setup
 
 Download and check Kudu QuickStart VM starts up.
 
-.. code:: bash
+.. sourcecode:: bash
 
     curl -s https://raw.githubusercontent.com/cloudera/kudu-examples/master/demo-vm-setup/bootstrap.sh | bash
 
 Confluent Setup
 ~~~~~~~~~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     #make confluent home folder
     mkdir confluent
@@ -46,13 +46,13 @@ Enable topic deletion.
 
 In ``/etc/kafka/server.properties`` add the following so we can delete topics.
 
-.. code:: bash
+.. sourcecode:: bash
 
     delete.topic.enable=true
 
 Start the Confluent platform.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Start the confluent platform, we need kafka, zookeeper and the schema registry
     bin/zookeeper-server-start etc/kafka/zookeeper.properties &
@@ -67,7 +67,7 @@ or from `Maven <http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22kafka-connect-
 
 If you want to build the connector, clone the repo and build the jar.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ##Build the connectors
     git clone https://github.com/datamountaineer/stream-reactor
@@ -88,14 +88,14 @@ Kudu Table
 The sink currently expects precreated tables in Kudu.
 
 
-.. code:: bash
+.. sourcecode:: bash
 
     #demo/demo
     ssh demo@quickstart -t impala-shell
 
-    CREATE TABLE default.kudu_test (id INT,random_field STRING  ) \
-    > TBLPROPERTIES ('kudu.master_addresses'='127.0.0.1', 'kudu.key_columns'='id', \
-    > 'kudu.table_name'='kudu_test', 'transient_lastDdlTime'='1456744118', \
+    CREATE TABLE default.kudu_test (id INT,random_field STRING  )
+    > TBLPROPERTIES ('kudu.master_addresses'='127.0.0.1', 'kudu.key_columns'='id',
+    > 'kudu.table_name'='kudu_test', 'transient_lastDdlTime'='1456744118',
     > 'storage_handler'='com.cloudera.kudu.hive.KuduStorageHandler')
     exit;
 
@@ -115,7 +115,7 @@ configuration.
 
 Since we are in standalone mode we'll create a file called ``kudu-sink.properties`` with the contents below:
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=kudu-sink
     connector.class=com.datamountaineer.streamreactor.connect.kudu.KuduSinkConnector
@@ -143,7 +143,7 @@ Now we are ready to start the Kudu sink Connector in standalone mode.
     install location like, kafka-connect-myconnector and the start scripts provided by Confluent will pick it up.
     The start script looks for folders beginning with kafka-connect.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-Kudu-0.1-all.jar
@@ -153,7 +153,7 @@ Now we are ready to start the Kudu sink Connector in standalone mode.
 
 We can use the CLI to check if the connector is up but you should be able to see this in logs as-well.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get kudu-sink
 
@@ -164,7 +164,7 @@ We can use the CLI to check if the connector is up but you should be able to see
     topics=kudu_test
     #task ids: 0
 
-.. code:: bash
+.. sourcecode:: bash
 
     [2016-05-08 22:00:20,823] INFO
         ____        __        __  ___                  __        _
@@ -197,16 +197,16 @@ Now we need to put some records it to the test_table topics. We can use the ``ka
 Start the producer and pass in a schema to register in the Schema Registry. The schema has a ``id`` field of type int
 and a ``random_field`` of type string.
 
-.. code:: bash
+.. sourcecode:: bash
 
     bin/kafka-avro-console-producer \
     > --broker-list localhost:9092 --topic kudu_test \
-    > --property value.schema='{"type":"record","name":"myrecord","fields":[{"name":"id","type":"int"}, \
+    > --property value.schema='{"type":"record","name":"myrecord","fields":[{"name":"id","type":"int"},
     {"name":"random_field", "type": "string"}]}'
 
 Now the producer is waiting for input. Paste in the following:
 
-.. code:: bash
+.. sourcecode:: bash
 
     {"id": 999, "random_field": "foo"}
     {"id": 888, "random_field": "bar"}
@@ -216,7 +216,7 @@ Check for records in Kudu
 
 Now check the logs of the connector you should see this:
 
-.. code:: bash
+.. sourcecode:: bash
 
     [2016-05-08 22:09:22,065] INFO
         ____        __        __  ___                  __        _
@@ -248,7 +248,7 @@ Now check the logs of the connector you should see this:
 
 In Kudu:
 
-.. code:: bash
+.. sourcecode:: bash
 
     #demo/demo
     ssh demo@quickstart -t impala-shell
@@ -272,7 +272,7 @@ Starting the Connector (Distributed)
 Connectors can be deployed distributed mode. In this mode one or many connectors are started on the same or different
 hosts with the same cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties.``
 
-.. code:: bash
+.. sourcecode:: bash
 
     # The group ID is a unique identifier for the set of workers that form a single Kafka Connect
     # cluster
@@ -283,13 +283,13 @@ For this quick-start we will just use one host.
 Now start the connector in distributed mode, this time we only give it one properties file for the kafka, zookeeper and
 schema registry configurations.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed confluent-2.0.1/etc/schema-registry/connect-avro-distributed.properties
 
 Once the connector has started lets use the kafka-connect-tools cli to post in our distributed properties file.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  java -jar build/libs/kafka-connect-cli-0.2-all.jar create Kudu-sink < kudu-sink.properties
 
@@ -345,7 +345,7 @@ Configurations
 Example
 ~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=kudu-sink
     connector.class=com.datamountaineer.streamreactor.connect.kudu.KuduSinkConnector

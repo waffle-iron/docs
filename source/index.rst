@@ -4,7 +4,7 @@
    :alt: 
 
 Stream Reactor
-=============
+==============
 
 The Stream Reactor is a set of components to build a reference architecture for streaming data platforms. At it's core
 is Kafka, with Kafka Connect providing a unified way to stream data in and out of the system.
@@ -21,7 +21,7 @@ Confluent Platform.
 Kafka Connectors
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 5
 
    connectors
    tools

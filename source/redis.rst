@@ -20,7 +20,7 @@ Redis Setup
 
 Download and install Redis.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  wget http://download.redis.io/redis-stable.tar.gz
     ➜  tar xvzf redis-stable.tar.gz
@@ -30,13 +30,13 @@ Download and install Redis.
 
 Start Redis
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  bin/redis-server
 
 Check Redis is running:
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  redis-cli ping
         PONG
@@ -45,7 +45,7 @@ Check Redis is running:
 Confluent Setup
 ~~~~~~~~~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     #make confluent home folder
     ➜  mkdir confluent
@@ -64,13 +64,13 @@ Enable topic deletion.
 In ``/etc/kafka/server.properties`` add the following to we can delete
 topics.
 
-.. code:: bash
+.. sourcecode:: bash
 
     delete.topic.enable=true
 
 Start the Confluent platform.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Start the confluent platform, we need kafka, zookeeper and the schema registry
     ➜  bin/zookeeper-server-start etc/kafka/zookeeper.properties &
@@ -86,7 +86,7 @@ or from `Maven <http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22kafka-connect-
 
 If you want to build the connector, clone the repo and build the jar.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ##Build the connectors
     ➜  git clone https://github.com/datamountaineer/stream-reactor
@@ -114,7 +114,7 @@ configuration.
 
 Since we are in standalone mode we'll create a file called ``redis-sink.properties`` with the contents below:
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=redis-sink
     connect.redis.sink.key.mode=FIELDS
@@ -152,7 +152,7 @@ Now we are ready to start the Redis sink Connector in standalone mode.
     install location like, kafka-connect-myconnector and the start scripts provided by Confluent will pick it up.
     The start script looks for folders beginning with kafka-connect.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-redis-0.1-all.jar
@@ -162,7 +162,7 @@ Now we are ready to start the Redis sink Connector in standalone mode.
 
 We can use the CLI to check if the connector is up but you should be able to see this in logs as-well.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get redis-sink
 
@@ -177,7 +177,7 @@ We can use the CLI to check if the connector is up but you should be able to see
     topics=person_redis
     #task ids: 0
 
-.. code:: bash
+.. sourcecode:: bash
 
     [2016-05-08 22:37:05,616] INFO
         ____        __        __  ___                  __        _
@@ -212,7 +212,7 @@ Now we need to put some records it to the test_table topics. We can use the ``ka
 Start the producer and pass in a schema to register in the Schema Registry. The schema has a ``firstname`` field of type string
 a ``lastnamme`` field of type string, an ``age`` field of type int and a ``salary`` field of type double.
 
-.. code:: bash
+.. sourcecode:: bash
 
     bin/kafka-avro-console-producer \
       --broker-list localhost:9092 --topic person_redis \
@@ -221,7 +221,7 @@ a ``lastnamme`` field of type string, an ``age`` field of type int and a ``salar
 
 Now the producer is waiting for input. Paste in the following:
 
-.. code:: bash
+.. sourcecode:: bash
 
     {"firstName": "John", "lastName": "Smith", "age":30, "salary": 4830}
 
@@ -230,14 +230,14 @@ Check for records in Redis
 
 Now check the logs of the connector you should see this:
 
-.. code:: bash
+.. sourcecode:: bash
 
     INFO Received record from topic:person_redis partition:0 and offset:0 (com.datamountaineer.streamreactor.connect.redis.sink.writer.RedisDbWriter:48)
     INFO Empty list of records received. (com.datamountaineer.streamreactor.connect.redis.sink.RedisSinkTask:75)
 
 Check the Redis.
 
-.. code:: bash
+.. sourcecode:: bash
 
     redis-cli
 
@@ -258,7 +258,7 @@ Starting the Connector (Distributed)
 Connectors can be deployed distributed mode. In this mode one or many connectors are started on the same or different
 hosts with the same cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties.``
 
-.. code:: bash
+.. sourcecode:: bash
 
     # The group ID is a unique identifier for the set of workers that form a single Kafka Connect
     # cluster
@@ -269,14 +269,14 @@ For this quick-start we will just use one host.
 Now start the connector in distributed mode, this time we only give it one properties file for the kafka, zookeeper and
 schema registry configurations.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed confluent-2.0.1/etc/schema-registry/connect-avro-distributed.properties
 
 Once the connector has started lets use the kafka-connect-tools cli to
 post in our distributed properties file.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  java -jar build/libs/kafka-connect-cli-0.2-all.jar create redis-sink < redis-sink.properties
 
@@ -348,7 +348,7 @@ Configurations
 Example
 ~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=redis-sink
     connect.redis.sink.key.mode=FIELDS

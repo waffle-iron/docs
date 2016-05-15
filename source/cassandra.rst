@@ -26,7 +26,7 @@ Cassandra Setup
 First download and install Cassandra if you don't have a compatible
 cluster available.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #make a folder for cassandra
     mkdir cassandra
@@ -47,7 +47,7 @@ cluster available.
 Confluent Setup
 ~~~~~~~~~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     #make confluent home folder
     mkdir confluent
@@ -66,13 +66,13 @@ Enable topic deletion.
 In ``/etc/kafka/server.properties`` add the following so we can delete
 topics.
 
-.. code:: bash
+.. sourcecode:: bash
 
     delete.topic.enable=true
 
 Start the Confluent platform.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Start the confluent platform, we need kafka, zookeeper and the schema registry
     bin/zookeeper-server-start etc/kafka/zookeeper.properties &
@@ -88,7 +88,7 @@ or from `Maven <http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22kafka-connect-
 
 If you want to build the connector, clone the repo and build the jar.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ##Build the connectors
     git clone https://github.com/datamountaineer/stream-reactor
@@ -103,10 +103,11 @@ If you want to build the connector, clone the repo and build the jar.
 Source Connector
 ----------------
 
-The Cassandra source connector allows you to extract entries from Cassandra with the CQL driver and write them into a Kafka topic.
+The Cassandra source connector allows you to extract entries from Cassandra with the CQL driver and write them into a
+Kafka topic.
 
-Each table specified in the configuration is polled periodically and each record from the result is converted to a Kafka Connect record.
-These records are then written to Kafka by the Kafka Connect framework.
+Each table specified in the configuration is polled periodically and each record from the result is converted to a Kafka
+Connect record. These records are then written to Kafka by the Kafka Connect framework.
 
 The source connector operates in two modes:
 
@@ -114,11 +115,14 @@ The source connector operates in two modes:
 2. Incremental - Each table is querying with lower and upper bounds to
    extract deltas.
 
-In incremental mode the column used to identify new or delta rows has to be provided. This column must be of CQL Type Timestamp. Due to
-Cassandra's and CQL restrictions this should be a primary key or part of a composite primary keys. ALLOW\_FILTERING can also be supplied as an
-configuration.
+In incremental mode the column used to identify new or delta rows has to be provided. This column must be of CQL Type
+Timestamp. Due to Cassandra's and CQL restrictions this should be a primary key or part of a composite primary keys.
+ALLOW\_FILTERING can also be supplied as an configuration.
 
-.. note:: TimeUUIDs are converted to strings. Use the `UUIDs <https://docs.datastax.com/en/drivers/java/2.0/com/datastax/driver/core/utils/UUIDs.html>`__ helpers to convert to Dates.
+.. note::
+
+    TimeUUIDs are converted to strings. Use the `UUIDs <https://docs.datastax.com/en/drivers/java/2.0/com/datastax/driver/core/utils/UUIDs.html>`__
+    helpers to convert to Dates.
 
 Source Connector QuickStart
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,7 +137,7 @@ Once you have installed and started Cassandra create a table to extract records 
 
 Start the Cassandra cql shell
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  bin ./cqlsh
     Connected to Test Cluster at 127.0.0.1:9042.
@@ -143,12 +147,12 @@ Start the Cassandra cql shell
 
 Execute the following:
 
-.. code:: sql
+.. sourcecode:: sql
 
     CREATE KEYSPACE demo WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : 3};
     use demo;
 
-    create table orders (id int, created timeuuid, product text, qty int, price float, PRIMARY KEY (id, created)) \
+    create table orders (id int, created timeuuid, product text, qty int, price float, PRIMARY KEY (id, created))
     WITH CLUSTERING ORDER BY (created asc);
 
     INSERT INTO orders (id, created, product, qty, price) VALUES (1, now(), 'OP-DAX-P-20150201-95.7', 100, 94.2);
@@ -180,7 +184,7 @@ json to the Connectors HTTP endpoint. Each connector exposes a rest endpoint for
 
 Since we are in standalone mode we'll create a file called ``cassandra-source-bulk-orders.properties`` with the contents below:
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=cassandra-source-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
@@ -217,7 +221,7 @@ Now we are ready to start the Cassandra Source Connector in standalone mode.
     install location like, kafka-connect-myconnector and the start scripts provided by Confluent will pick it up.
     The start script looks for folders beginning with kafka-connect.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-cassandra-0.1-all.jar
@@ -227,7 +231,7 @@ Now we are ready to start the Cassandra Source Connector in standalone mode.
 
 We can use the CLI to check if the connector is up but you should be able to see this in logs.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get cassandra-source-orders
     #Connector `cassandra-source-orders`:
@@ -247,7 +251,7 @@ Check for Source Records in Kafka
 
 Now check the logs of the connector you should see this:
 
-.. code:: bash
+.. sourcecode:: bash
 
         ____        __        __  ___                  __        _
        / __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
@@ -283,7 +287,7 @@ Now check the logs of the connector you should see this:
 
 We can then use the kafka-avro-console-consumer to see what's in the kafka topic we have routed the order table to.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/kafka-avro-console-consumer \
     --zookeeper localhost:2181 \
@@ -311,7 +315,7 @@ Source Connector Configuration (Incremental)
 The configuration is similar to before but this time we will perform an incremental load. Below is the configuration.
 Create a file called ``cassandra-source-incr-orders.properties`` and add the following content:
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=cassandra-source-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
@@ -338,9 +342,12 @@ There are two changes from the previous configuration:
 
 We can reuse the 3 records inserted into Cassandra earlier but lets clean out the target Kafka topic.
 
-.. note:: You must delete.topics.enable in etc/kafka/server.properties and shutdown any consumers of this topic for this to take effect.
+.. note:: 
 
-.. code:: bash
+    You must delete.topics.enable in etc/kafka/server.properties and shutdown any consumers of this topic for this to 
+    take effect.
+
+.. sourcecode:: bash
 
     #Delete the topic
     ➜  confluent-2.0.1/bin/kafka-topics --zookeeper localhost:2181 --topic orders-topic --delete
@@ -351,7 +358,7 @@ Starting the Connector (Distributed)
 Connectors can be deployed distributed mode. In this mode one or many connectors are started on the same or different
 hosts with the same cluster id. The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties``.
 
-.. code:: bash
+.. sourcecode:: bash
 
     # The group ID is a unique identifier for the set of workers that form a single Kafka Connect
     # cluster
@@ -362,13 +369,13 @@ For this quick-start we will just use one host.
 Now start the connector in distributed mode, this time we only give it one properties file for the kafka, zookeeper
 and schema registry configurations.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed confluent-2.0.1/etc/schema-registry/connect-avro-distributed.properties
 
 Once the connector has started lets use the kafka-connect-tools cli to post in our incremental properties file.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  java -jar build/libs/kafka-connect-cli-0.2-all.jar create cassandra-source-orders < cassandra-source-incr-orders.properties
 
@@ -388,7 +395,7 @@ Once the connector has started lets use the kafka-connect-tools cli to post in o
 If you switch back to the terminal you started the Connector in you should see the Cassandra Source being accepted and
 the task starting and processing the 3 existing rows.
 
-.. code:: bash
+.. sourcecode:: bash
 
     [2016-05-06 13:44:32,963] INFO Received setting:
         keySpace: demo
@@ -407,7 +414,7 @@ the task starting and processing the 3 existing rows.
 
 Check Kafka, 3 rows as before.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/kafka-avro-console-consumer \
     --zookeeper localhost:2181 \
@@ -419,7 +426,7 @@ Check Kafka, 3 rows as before.
 
 The source tasks will continue to poll but not pick up any new rows yet.
 
-.. code::bash
+.. code-block::bash
 
     INFO Query SELECT * FROM demo.orders WHERE created > ? AND created <= ?  ALLOW FILTERING executing with bindings (Thu May 05 13:26:44 CEST 2016, Thu May 05 21:19:38 CEST 2016). (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:152)
     INFO Querying returning results for demo.orders. (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:181)
@@ -430,7 +437,7 @@ Inserting new data
 
 Now lets insert a row into the Cassandra table. Start the CQL shell.
 
-.. code:: bash
+.. code-block:: bash
 
     ➜  bin ./cqlsh
     Connected to Test Cluster at 127.0.0.1:9042.
@@ -439,7 +446,7 @@ Now lets insert a row into the Cassandra table. Start the CQL shell.
 
 Execute the following:
 
-.. code:: sql
+.. code-block:: sql
 
     use demo;
 
@@ -459,7 +466,7 @@ Execute the following:
 
 Check the logs.
 
-.. code:: bash
+.. sourcecode:: bash
 
     [2016-05-06 13:45:33,134] INFO Query SELECT * FROM demo.orders WHERE created > maxTimeuuid(?) AND created <= minTimeuuid(?)  ALLOW FILTERING executing with bindings (2016-05-06 13:31:37+0200, 2016-05-06 13:45:33+0200). (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:156)
     [2016-05-06 13:45:33,137] INFO Querying returning results for demo.orders. (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:185)
@@ -468,7 +475,7 @@ Check the logs.
 
 Check Kafka.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent confluent-2.0.1/bin/kafka-avro-console-consumer \
     --zookeeper localhost:2181 \
@@ -508,7 +515,7 @@ Sink Connector Configuration
 The sink configuration is similar to the source, they share most of the same configuration options. Create a file called
 cassandra-sink-distributed-orders.properties with contents below.
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=cassandra-sink-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
@@ -538,7 +545,7 @@ Cassandra Tables
 
 The sink expects the tables it's configured to write to are already present in Cassandra. Lets create our table for the sink.
 
-.. code:: bash
+.. sourcecode:: bash
 
     use demo;
     create table orders_write_back (id int, created timeuuid, product text, qty int, price float, PRIMARY KEY \
@@ -556,13 +563,13 @@ Starting the Sink Connector (Distributed)
 
 Again will start in distributed mode.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed etc/schema-registry/connect-avro-distributed.properties 
 
 Once the connector has started lets use the kafka-connect-tools cli to post in our distributed properties file.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  java -jar build/libs/kafka-connect-cli-0.3-all.jar create cassandra-sink-orders < cassandra-sink-distributed-orders.properties 
 
@@ -583,7 +590,7 @@ Once the connector has started lets use the kafka-connect-tools cli to post in o
 
 Now check the logs to see if we started the sink.
 
-.. code:: bash
+.. sourcecode:: bash
 
     [2016-05-06 13:52:28,178] INFO 
         ____        __        __  ___                  __        _
@@ -610,7 +617,7 @@ Now check the logs to see if we started the sink.
 
 Now check Cassandra
 
-.. code:: bash
+.. sourcecode:: bash
 
     use demo;
     SELECT * FROM orders_write_back;
@@ -715,7 +722,7 @@ iteration (or in case of a crash). In this case the maximum value of the records
 and stored in Kafka by the framework. If no offset is found for the table at startup a default timestamp of 1900-01-01
 is used. This is then passed to a prepared statement containing a range query. For example:
 
-.. code:: sql
+.. sourcecode:: sql
 
     SELECT * FROM demo.orders WHERE created > maxTimeuuid(?) AND created <= minTimeuuid(?)
 
@@ -855,7 +862,7 @@ Configurations options specific to the source connector are:
 Bulk Example
 ^^^^^^^^^^^^
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=cassandra-source-orders-bulk
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
@@ -870,7 +877,7 @@ Bulk Example
 Incremental Example
 ^^^^^^^^^^^^^^^^^^^
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=cassandra-source-orders-incremental
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
@@ -899,7 +906,7 @@ Configurations options specific to the sink connector are:
 Example
 ^^^^^^^
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=cassandra-sink-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector

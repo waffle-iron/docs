@@ -20,7 +20,7 @@ Setup
 Confluent Setup
 ~~~~~~~~~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     #make confluent home folder
     mkdir confluent
@@ -39,13 +39,13 @@ Enable topic deletion.
 In ``/etc/kafka/server.properties`` add the following to we can delete
 topics.
 
-.. code:: bash
+.. sourcecode:: bash
 
     delete.topic.enable=true
 
 Start the Confluent platform.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Start the confluent platform, we need kafka, zookeeper and the schema registry
     bin/zookeeper-server-start etc/kafka/zookeeper.properties &
@@ -61,7 +61,7 @@ or from `Maven <http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22kafka-connect-
 
 If you want to build the connector, clone the repo and build the jar.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ##Build the connectors
     git clone https://github.com/datamountaineer/stream-reactor
@@ -99,7 +99,7 @@ configuration.
 Since we are in standalone mode we'll create a file called
 bloomberg-source.properties with the contents below:
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=bloomberg-source
     connector.class=com.datamountaineer.streamreactor.connect.bloomberg.BloombergSourceConnector
@@ -130,7 +130,7 @@ Now we are ready to start the Bloomberg Source Connector in standalone mode.
 
 .. note:: You need to add the connector to your classpath or you can create a folder in share/java like kafka-connect-myconnector and the start scripts provided by Confluent will pick it up. The start script looks for folders beginning with kafka-connect.
 
-.. code:: bash
+.. sourcecode:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-bloomberg-0.1-all.jar
@@ -139,7 +139,7 @@ Now we are ready to start the Bloomberg Source Connector in standalone mode.
 
 We can use the CLI to check if the connector is up but you should be able to see this in logs as-well.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get bloomberg-source
 
@@ -149,12 +149,12 @@ Check for Source Records in Kafka
 
 Now check the logs of the connector you should see this
 
-... code:: bash
+... sourcecode:: bash
 
 
 We can then use the kafka-avro-console-consumer to see what's in the kafka topic we have routed the subscription to.
 
-... code:: bash
+... sourcecode:: bash
 
 Now stop the connector.
 
@@ -165,7 +165,7 @@ Connectors can be deployed distributed mode. In this mode one or many
 connectors are started on the same or different hosts with the same cluster id.
 The cluster id can be found in ``etc/schema-registry/connect-avro-distributed.properties.``
 
-.. code:: bash
+.. sourcecode:: bash
 
     # The group ID is a unique identifier for the set of workers that form a single Kafka Connect
     # cluster
@@ -177,14 +177,14 @@ Now start the connector in distributed mode, this time we only give it
 one properties file for the kafka, zookeeper and schema registry
 configurations.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  confluent-2.0.1/bin/connect-distributed confluent-2.0.1/etc/schema-registry/connect-avro-distributed.properties
 
 Once the connector has started lets use the kafka-connect-tools cli to
 post in our distributed properties file.
 
-.. code:: bash
+.. sourcecode:: bash
 
     ➜  java -jar build/libs/kafka-connect-cli-0.2-all.jar create bloomberg-source < bloomberg-source.properties
 
@@ -259,7 +259,7 @@ Configurations
 Example
 ~~~~~~~
 
-.. code:: bash
+.. sourcecode:: bash
 
     name=bloomberg-source
     connector.class=com.datamountaineer.streamreactor.connect.bloomberg.BloombergSourceConnector
