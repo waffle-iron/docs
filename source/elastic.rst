@@ -288,20 +288,26 @@ Features
 Configurations
 --------------
 
-+---------------------------------+-----------+----------+----------------------------------+
-| name                            | data type | required | description                      |
-+=================================+===========+==========+==================================+
-|connect.elastic.url              | String    | Yes      | | Url of the                     |
-|                                 |           |          | | Elastic Cluster.               |
-+---------------------------------+-----------+----------+----------+-----------------------+
-|connect.elastic.port             | String    | Yes      | | Port of the                    |
-|                                 |           |          | | Elastic Cluster.               |
-+---------------------------------+-----------+----------+----------+-----------------------+
-|| connect.elastic.topic.to.table | String    | Yes      || Table to Topic map for import in|
-|| table.map                      |           |          || format table1:topic1,           |
-|                                 |           |          || table2:topic2, if the topic left|
-|                                 |           |          || blank table name is used.       |
-+---------------------------------+-----------+----------+----------------------------------+
+``connect.elastic.url``
+
+Url of the Elastic cluster.
+
+* Data Type : string
+* Optional  : no
+
+``connect.elastic.port``
+
+Port of the Elastic cluster.
+
+* Data Type : string
+* Optional  : no
+
+``connect.elastic.topic.to.table.map``
+
+Table to Topic map for import in table.map format table1:topic1,table2:topic2, if the topic left blank table name is used.
+
+* Data Type : string
+* Optional  : yes
 
 Example
 ~~~~~~~

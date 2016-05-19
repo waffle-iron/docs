@@ -174,13 +174,13 @@ Execute the following:
 Source Connector Configuration (Bulk)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Next we start the connector in standalone mode. This useful for testing
-and one of jobs, usually you'd run in distributed mode to get fault
-tolerance and better performance.
+Next we start the connector in standalone mode. This useful for testing and one of jobs, usually you'd run in
+distributed mode to get fault tolerance and better performance.
 
 Before we can start the connector we need to setup it's configuration. In standalone mode this is done by creating a
 properties file and passing this to the connector at startup. In distributed mode you can post in the configuration as
-json to the Connectors HTTP endpoint. Each connector exposes a rest endpoint for stoping, starting and updating the configuration.
+json to the Connectors HTTP endpoint. Each connector exposes a rest endpoint for stoping, starting and updating the
+configuration.
 
 Since we are in standalone mode we'll create a file called ``cassandra-source-bulk-orders.properties`` with the contents below:
 
@@ -769,94 +769,163 @@ Configurations
 
 Configurations common to both sink and source are:
 
-+-----------------------------------+-----------+----------+--------------------------------+
-| name                              | data type | required | description                    |
-+===================================+===========+==========+================================+
-|connect.cassandra.contact.points   | String    | Yes      | | Contact points (hosts) in    |
-|                                   |           |          | | Cassandra cluster            |
-+-----------------------------------+-----------+----------+--------------------------------+
-|connect.cassandra.key.space        | String    | Yes      | | Key space the tables to write|
-|                                   |           |          | | to belong to                 |
-+-----------------------------------+-----------+----------+--------------------------------+
-|connect.cassandra.port             | Int       | No       || Port for the native Java      |
-|                                   |           |          || driver                        |
-|                                   |           |          || (default 9042).               |
-+-----------------------------------+-----------+----------+--------------------------------+
-|| connect.cassandra.authentication.| String    | No       || Mode to authenticate with     |
-|| mode                             |           |          || Cassandra, either username or |
-|                                   |           |          || none, default is none.        |
-+-----------------------------------+-----------+----------+--------------------------------+
-|connect.cassandra.username         | No        | String   || Username to connect to        |
-|                                   |           |          || Cassandra with if             |
-|                                   |           |          || USERNAME_PASSWORD enabled.    |
-+-----------------------------------+-----------+----------+--------------------------------+
-|connect.cassandra.password         | No        | String   || Password to connect to        |
-|                                   |           |          || Cassandra with if             |
-|                                   |           |          || USERNAME_PASSWORD enabled     |
-+-----------------------------------+-----------+----------+--------------------------------+
-|connect.cassandra.ssl.enabled      | No        | Boolean  || Enables SSL communication     |
-|                                   |           |          || against SSL enabled Cassandra |
-|                                   |           |          || ,default false.               |
-+-----------------------------------+-----------+----------+--------------------------------+
-|connect.cassandra.trust.store.path | No        | String   || Path to truststore            |
-+-----------------------------------+-----------+----------+--------------------------------+
-|| connect.cassandra.trust.store.   | No        | String   || Password for truststore       |
-|| password                         |           |          ||                               |
-+-----------------------------------+-----------+----------+--------------------------------+
-|connect.cassandra.key.store.path   | No        | String   || Path to keystore              |
-+-----------------------------------+-----------+----------+--------------------------------+
-|| connect.cassandra.key.store.     | No        | String   || Password for the keystore     |
-|| password                         |           |          ||                               |
-+-----------------------------------+-----------+----------+--------------------------------+
-|| connect.cassandra.ssl.client.    | No        | Boolean  || Enable client certification   |
-|| cert.auth                        |           |          || authentication by Cassandra.  |
-|                                   |           |          || Requires KeyStore options to  |
-|                                   |           |          || be set. Default false.        |
-+-----------------------------------+-----------+----------+--------------------------------+
+``connect.cassandra.contact.points``
+
+Contact points (hosts) in Cassandra cluster.
+
+* Data type: string
+* Optional : no
+
+``connect.cassandra.key.space``
+
+Key space the tables to write belong to.
+
+* Data type: string
+* Optional : no
+
+``connect.cassandra.port``
+
+Port for the native Java driver.
+
+* Data type: int
+* Optional : yes
+* Default : 9042
+
+``connect.cassandra.authentication.mode``
+
+Mode to authenticate with. Either username_password or none.
+
+* Data type: string
+* Optional : yes
+* Default : none
+
+``connect.cassandra.username``
+
+Username to connect to Cassandra with if ``connect.cassandra.authentication.mode`` is set to *username_password*.
+
+* Data type: string
+* Optional : yes
+
+``connect.cassandra.password``
+
+Password to connect to Cassandra with if ``connect.cassandra.authentication.mode`` is set to *username_password*.
+
+* Data type: string
+* Optional : yes
+
+``connect.cassandra.ssl.enabled``
+
+Enables SSL communication against SSL enable Cassandra cluster.
+
+* Data type: boolean
+* Optional : yes
+* Default : false
+
+``connect.cassandra.trust.store.password``
+
+Password for truststore.
+
+* Data type: string
+* Optional : yes
+
+``connect.cassandra.key.store.path``
+
+Path to truststore.
+
+* Data type: string
+* Optional : yes
+
+``connect.cassandra.key.store.password``
+
+Password for key store.
+
+* Data type: string
+* Optional : yes
+
+``connect.cassandra.ssl.client.cert.auth``
+
+Path to keystore.
+
+* Data type: string
+* Optional : yes
 
 Source Connector Configurations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Configurations options specific to the source connector are:
 
-+---------------------------------+-----------+----------+----------------------------------+
-| name                            | data type | required | description                      |
-+=================================+===========+==========+==================================+
-|| connect.cassandra.import.poll. | Int       | No       || The polling interval            |
-|| poll.interval                  |           |          || between queries against tables  |
-|                                 |           |          || for bulk mode in milliseconds.  |
-|                                 |           |          || Default is 1 minute.            |
-|                                 |           |          || WATCH OUT WITH BULK MODE AS     |
-|                                 |           |          || MAY REPEATEDLY PULL IN THE      |
-|                                 |           |          || SAME DATE.                      |
-+---------------------------------+-----------+----------+----------------------------------+
-|connect.cassandra.import.mode    | String    | Yes      || Either bulk or incremental      |
-+---------------------------------+-----------+----------+----------------------------------+
-|| connect.cassandra.import.      | String    | Yes      || Name of the timestamp column in |
-|| timestamp.column               |           |          || the cassandra table to use      |
-|                                 |           |          || identify deltas.                |
-|                                 |           |          || table1:col,table2:col.          |
-|                                 |           |          || MUST BE OF TYPE TIMEUUID        |
-+---------------------------------+-----------+----------+----------------------------------+
-|| connect.cassandra.import.      | String    | Yes      || Table to Topic map for import in|
-|| table.map                      |           |          || format table1:topic1,           |
-|                                 |           |          || table2:topic2, if the topic left|
-|                                 |           |          || blank table name is used.       |
-+---------------------------------+-----------+----------+----------------------------------+
-|| connect.cassandra.import.      | String    | No       || Enable ALLOW FILTERING in       |
-|| source.allow.filtering         |           |          || incremental selects. Default is |
-|                                 |           |          || true                            |
-+---------------------------------+-----------+----------+----------------------------------+
-|| connect.cassandra.import.      | Int       | No       || The fetch size for the Cassandra|
-|| fetch.size                     |           |          || driver to read. Default is 1000.|
-+---------------------------------+-----------+----------+----------------------------------+
-|| connect.cassandra.source.task. | Int       | No       || The size of the queue as read   |
-|| buffer.size                    |           |          || writes to. Default 10000.       |
-+---------------------------------+-----------+----------+----------------------------------+
-|| connect.cassandra.source.task. | Int       | No       || The number of records the source|
-|| batch.size                     |           |          || task should drain from the      |
-|                                 |           |          || reader queue.                   |
-+---------------------------------+-----------+----------+----------------------------------+
+``connect.cassandra.import.poll.interval``
+
+
+The polling interval between queries against tables for bulk mode in milliseconds.
+Default is 1 minute.
+
+* Data type: int
+* Optional : yes
+* Default  : 10
+
+.. warning::
+
+    WATCH OUT WITH BULK MODE AS MAY REPEATEDLY PULL IN THE SAME DATE.
+
+``connect.cassandra.import.mode``
+
+Either bulk or incremental.
+
+* Data type : string
+* Optional  : no
+
+
+``connect.cassandra.import.timestamp.column``
+
+* Data type : string
+* Optional  : no (Required for incremental mode)
+
+Name of the timestamp column in the cassandra table to use identify deltas.
+Format, table1:col,table2:col.
+
+.. warning:: Must be of CQL Type TimeUUID.
+
+``connect.cassandra.import.table.map``
+
+Table to Topic map for import in format table1:topic1,table2:topic2, if the topic is left blank table name is used.
+
+ * Data Type : string
+ * Optional  : no
+
+
+``connect.cassandra.import.source.allow.filtering``
+
+Enable ALLOW FILTERING in incremental selects.
+
+* Data type : boolean
+* Optional  : yes
+* Default   : true
+
+``connect.cassandra.import.fetch.size``
+
+The fetch size for the Cassandra driver to read.
+
+* Data type : int
+* Optional  : yes
+* Default   : 1000
+
+``connect.cassandra.source.task.buffer.size``
+
+The size of the queue for buffering resultset records before write to Kafka.
+
+* Data type : int
+* Optional  : yes
+* Default   : 10000
+
+
+``connect.cassandra.source.task.batch.size``
+
+The number of records the source  task should drain from the reader queue.
+
+* Data type : int
+* Optional  : yes
+* Default   : 1000
 
 
 Bulk Example
@@ -895,13 +964,12 @@ Sink Connector Configurations
 
 Configurations options specific to the sink connector are:
 
-+----------------------+-----------+----------+-----------------------------------------+
-|name                  | data type | required | description                             |
-+======================+===========+==========+=========================================+
-|| connect.cassandra.  | String    | Yes      || Topic to Table map for import          |
-|| export.map          |           |          || format topic1:table1, if the table     |
-|                      |           |          || left blank topic name is used.         |
-+----------------------+-----------+----------+-----------------------------------------+
+``connect.cassandra.export.map``
+
+Topic to Table map for import in format topic1:table1, if the table left blank topic name is used.
+
+* Data Type: string
+* Optional : no
 
 Example
 ^^^^^^^

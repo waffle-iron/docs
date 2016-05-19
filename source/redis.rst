@@ -209,8 +209,8 @@ Test Records
 
 Now we need to put some records it to the test_table topics. We can use the ``kafka-avro-console-producer`` to do this.
 
-Start the producer and pass in a schema to register in the Schema Registry. The schema has a ``firstname`` field of type string
-a ``lastnamme`` field of type string, an ``age`` field of type int and a ``salary`` field of type double.
+Start the producer and pass in a schema to register in the Schema Registry. The schema has a ``firstname`` field of type
+string a ``lastnamme`` field of type string, an ``age`` field of type int and a ``salary`` field of type double.
 
 .. sourcecode:: bash
 
@@ -280,7 +280,8 @@ post in our distributed properties file.
 
     ➜  java -jar build/libs/kafka-connect-cli-0.2-all.jar create redis-sink < redis-sink.properties
 
-If you switch back to the terminal you started the Connector in you should see the Redis sink being accepted and the task starting.
+If you switch back to the terminal you started the Connector in you should see the Redis sink being accepted and the
+task starting.
 
 
 Features
@@ -298,52 +299,37 @@ The sink supports:
 Configurations
 --------------
 
-+---------------------------------+-----------+----------+-----------------------------------+
-| name                            | data type | required | description                       |
-+=================================+===========+==========+===================================+
-|| connect.redis.sink.connection. | String    | Yes      || Specifies the Redis server.      |
-|| host                           |           |          |                                   |
-+---------------------------------+-----------+----------+-----------------------------------+
-|| connect.redis.sink.connection. | Int       | Yes      || Specifies the Redis server port  |
-|| port                           |           |          ||                                  |
-|                                 |           |          || number                           |
-+---------------------------------+-----------+----------+-----------------------------------+
-| connect.redis.sink.connection   | String    | Yes      || Specifies the authorization      |
-| password                        |           |          || password.                        |
-+---------------------------------+-----------+----------+-----------------------------------+
-| connect.redis.sink.key.mode     | String    | Yes      || There are three available modes: |
-|                                 |           |          || SINK_RECORD, FIELDS and GENERIC. |
-|                                 |           |          || uses the SinkRecord.keyValue as  |
-|                                 |           |          || SINK_RECORD.                     |
-|                                 |           |          || the redis row key; FIELDS -      |
-|                                 |           |          || combines the specified payload   |
-|                                 |           |          || (kafka connect Struct instance)  |
-|                                 |           |          || fields to make up the redis row  |
-|                                 |           |          || key; GENERIC- combines the kafka |
-|                                 |           |          || topic, offset and partition to   |
-|                                 |           |          || build the redis row key.         |
-+---------------------------------+-----------+----------+-----------------------------------+
-| connect.redis.sink.fields       | String    | Yes      || Specifies which fields to        |
-|                                 |           |          || consider when inserting the new  |
-|                                 |           |          || Redis entry. If is not set it    |
-|                                 |           |          || will take all the fields present |
-|                                 |           |          || in the payload. Field mapping is |
-|                                 |           |          || supported; this way a payload    |
-|                                 |           |          || field can be inserted into a     |
-|                                 |           |          || 'mapped' column. If this setting |
-|                                 |           |          || is not present it will insert all|
-|                                 |           |          || fields.  Examples: * fields to be|
-|                                 |           |          || used:field1,field2,field3; -     |
-|                                 |           |          || Only! field1,field2 and field3   |
-|                                 |           |          || will be inserted ** fields with  |
-|                                 |           |          || mapping: field1=alias1,field2,   |
-|                                 |           |          || field3=alias3 - Only! field1,    |
-|                                 |           |          || field2 and field3 will be        |
-|                                 |           |          || inserted fields with             |
-|                                 |           |          || mapping:\*,field3=alias.         |
-|                                 |           |          || All fields are inserted but      |
-|                                 |           |          || field3 will be inserted as alias |
-+---------------------------------+-----------+----------+-----------------------------------+
+``connect.redis.sink.connection.host``
+
+Specifies the Redis server.
+
+* Data type : string
+* Optional  : no
+
+``connect.redis.sink.connection.port``
+
+Specifies the Redis server port number.
+
+* Data type : int
+* Optional  : no
+
+``connect.redis.sink.connection.password``
+
+Specifies the authorization password.
+
+* Data type : string
+* Optional  : yes
+
+``connect.redis.sink.key.mode``
+
+Specifies which fields to consider when inserting the new Redis entry. If is not set it will take all the fields present
+in the payload. Field mapping is supported; this way a payload field can be inserted into a 'mapped' column. If this
+setting is not present it will insert all fields.
+
+* Data type : string
+* Optional  : no
+* Values : SINK_RECORD or FIELDS or GENERIC
+
 
 Example
 ~~~~~~~

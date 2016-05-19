@@ -330,17 +330,19 @@ Data Type Mappings
 Configurations
 --------------
 
-+------------------------------+-----------+----------+----------------------------------+
-| name                         | data type | required | description                      |
-+==============================+===========+==========+==================================+
-|| connect.kudu.master         | String    | Yes      || Specifies the Kudu server.      |
-+------------------------------+-----------+----------+----------------------------------+
-|| connect.kudu.topic.to.table | String    | Yes      || Table to Topic map for import in|
-|| table.map                   |           |          || format table1:topic1,           |
-|                              |           |          || table2:topic2, if the topic left|
-|                              |           |          || blank table name is used.       |
-+------------------------------+-----------+----------+----------------------------------+
+``connect.kudu.master``
 
+Specifies a Kudu server.
+
+* Data type : string
+* Optional  : no
+
+``connect.kudu.topic.to.table``
+
+Table to Topic map for import in format table1:topic1,table2:topic2, if the topic left blank table name is used.
+
+* Data type : string
+* Optional  : no
 
 Example
 ~~~~~~~

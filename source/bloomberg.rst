@@ -127,13 +127,18 @@ Starting the Source Connector (Standalone)
 
 Now we are ready to start the Bloomberg Source Connector in standalone mode.
 
-.. note:: You need to add the connector to your classpath or you can create a folder in share/java like kafka-connect-myconnector and the start scripts provided by Confluent will pick it up. The start script looks for folders beginning with kafka-connect.
+.. note::
+
+    You need to add the connector to your classpath or you can create a folder in share/java like
+    kafka-connect-myconnector and the start scripts provided by Confluent will pick it up. The start script looks for
+    folders beginning with kafka-connect.
 
 .. sourcecode:: bash
 
     #Add the Connector to the class path
     ➜  export CLASSPATH=kafka-connect-bloomberg-0.1-all.jar
-    #Start the connector in standalone mode, passing in two properties files, the first for the schema registry, kafka and zookeeper and the second with the connector properties.
+    #Start the connector in standalone mode, passing in two properties files, the first for the schema registry, kafka
+    #and zookeeper and the second with the connector properties.
     ➜  bin/connect-standalone etc/schema-registry/connect-avro-standalone.properties bloomberg-source.properties
 
 We can use the CLI to check if the connector is up but you should be able to see this in logs as-well.
@@ -209,51 +214,59 @@ Data Types
 Configurations
 --------------
 
-+---------------------+-----------+----------+----------------------------+
-| name                | data type | required | description                |
-+=====================+===========+==========+============================+
-|| connect.bloomberg. | String    | Yes      || The Bloomberg endpoint to |
-|| server.host        |           |          || connect to.               |
-+---------------------+-----------+----------+----------------------------+
-|| connect.bloomberg. | String    | Yes      || The Bloomberg endpoint    |
-|| server.port        |           |          || port connect to.          |
-+---------------------+-----------+----------+----------------------------+
-|| connect.bloomberg. | String    | Yes      || Which Bloomberg service to|
-|| service.uri        |           |          || connect to.               |
-|                     |           |          || Can be //blp/mkdata or    |
-|                     |           |          || //blp/refdata             |
-+---------------------+-----------+----------+----------------------------+
-|| connect.bloomberg. | String    | Yes      || APPLICATION_ONLY or       |
-|| authentication.mode|           |          || USER_AND_APPLICATION      |
-+---------------------+-----------+----------+----------------------------+
-|| connect.bloomberg. | String    | Yes      || Specifies which ticker    |
-|| subscriptions      |           |          || subscription to make.     |
-|                     |           |          || The format is             |
-|                     |           |          || TICKER:FIELD,FIELD,..;    |
-|                     |           |          || e.g.                      |
-|                     |           |          || AAPL US Equity:LAST_PRICE;|
-|                     |           |          || IBM US Equity:BID         |
-+---------------------+-----------+----------+----------------------------+
-|| connect.bloomberg. | Int       | No       || The buffer accumulating   |
-|| buffer.size        |           |          || the data updates received |
-|                     |           |          || from Bloomberg.           |
-|                     |           |          || If not provided it will   |
-|                     |           |          || default to 2048.          |
-|                     |           |          || If the buffer is full and |
-|                     |           |          || a new update will be      |
-|                     |           |          || received it won't be added|
-|                     |           |          || to the buffer until it is |
-|                     |           |          || first drained             |
-+---------------------+-----------+----------+----------------------------+
-|| connect.bloomberg. | String    | No       || Specifies the payload type|
-|| payload.type       |           |          || going over to kafka.      |
-|                     |           |          || There are two supported   |
-|                     |           |          || modes ,json(default) and  |
-|                     |           |          || avro.                     |
-+---------------------+-----------+----------+----------------------------+
-|| connect.bloomberg. | String    | Yes      || The topic to write to     |
-|| kafka.topic        |           |          |                            |
-+---------------------+-----------+----------+----------------------------+
+``connect.bloomberg.server.host``
+
+The bloomberg endpoint to connect to.
+
+* Data type : string
+* Optional  : no
+
+``connect.bloomberg.server.port``
+
+The Bloomberg endpoint to connect to.
+
+* Data type : string
+* Optional  : no
+
+``connect.bloomberg.service.uri``
+
+Which Bloomberg service to connect to. Can be //blp/mkdata or //blp/refdata.
+
+* Data type : string
+* Optional  : no
+
+``connect.bloomberg.authentication.mode``
+
+The mode to authentication against the Bloomberg server. Either APPLICATION_ONLY or USER_AND_APPLICATION.
+
+* Data type : string
+* Optional  : no
+
+
+``connect.bloomberg.subscriptions``
+
+* Data type : string
+* Optional  : no
+
+Specifies which ticker subscription to make. The format is TICKER:FIELD,FIELD,..;
+e.g.AAPL US Equity:LAST_PRICE;IBM US Equity:BID
+
+``connect.bloomberg.buffer.size``
+
+* Data type : int
+* Optional  : yes
+* Default   : 2048
+
+The buffer accumulating the data updates received from Bloomberg. If not provided it will default to 2048. If the
+buffer is full and a new update will be received it won't be added to the buffer until it is first drained.
+
+``connect.bloomberg.kafka.topic``
+
+The topic to write to.
+
+* Data type : string
+* Optional  : no
+
 
 Example
 ~~~~~~~
