@@ -88,7 +88,7 @@ loader so we can create a file called ``application.conf`` and add the following
       schema-registry-url = "http://localhost:8081"
     }
 
-To use the ``application.conf`` file pass the location in when starting the application with
+To use the ``application.conf`` file, set its location as a Java property when starting the application like this
 ``-Dconfig.file=path_to_file/application.conf``
 
 To start the socket streamer:

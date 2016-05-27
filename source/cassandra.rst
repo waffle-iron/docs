@@ -133,7 +133,7 @@ Test data
 ^^^^^^^^^
 
 Once you have installed and started Cassandra create a table to extract records from. This snippet creates a table called
- orders and inserts 3 rows representing fictional orders or some options and futures on a trading platform.
+orders and inserts 3 rows representing fictional orders or some options and futures on a trading platform.
 
 Start the Cassandra cql shell
 
@@ -521,7 +521,7 @@ cassandra-sink-distributed-orders.properties with contents below.
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
     topics=orders-topic 
-    connect.cassandra.export.map=orders-topic:orders_write_back
+    connect.cassandra.export.map={orders-topic:orders_write_back;*}
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
     connect.cassandra.key.space=demo
@@ -529,10 +529,9 @@ cassandra-sink-distributed-orders.properties with contents below.
     connect.cassandra.username=cassandra
     connect.cassandra.password=cassandra
 
-The main difference here is the *cassandra.export.map*. This like the source connector but reversed. This is comma
-separated list of topic to table mappings. The mapping for each element in the list is separate by a `:`. The topic is
-before and the table after the colon. In this example the routing is orders-topic to the orders\_write\_back table in
-Cassandra.
+The main difference here is the *cassandra.export.mapping*. This like the source connector but reversed. This is comma
+separated list of topic to table mappings. The mapping for each element in the list is separate by a _:_ .
+In this example the routing is orders-topic to the orders\_write\_back table in Cassandra and all fields are selected.
 
 Additionally we must supply the topics configuration option for the framework.
 
@@ -578,7 +577,7 @@ Once the connector has started lets use the kafka-connect-tools cli to post in o
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
     topics=orders-topic
-    connect.cassandra.export.map=orders-topic:orders_write_back
+    connect.cassandra.export.map={orders-topic:orders_write_back;*}
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
     connect.cassandra.key.space=demo
@@ -636,12 +635,12 @@ Bingo, our 4 rows!
 Features
 --------
 
-Both the source and sink connector use Cassandra's executeAysnc functionality. This is non blocking. For the source,
-the when the result returns it is iterated over and rows added to a internal queue. This queue is then drained by the
-connector and written to Kafka.
-
 Source Connector
 ~~~~~~~~~~~~~~~~
+
+The source uses Cassandra's executeAysnc functionality. This is non blocking. For the source,
+the when the result returns it is iterated over and rows added to a internal queue. This queue is then drained by the
+connector and written to Kafka.
 
 Data Types
 ^^^^^^^^^^
@@ -740,12 +739,17 @@ In ``bulk`` mode the connector extracts the full table, no where clause is attac
 
     Watch out with the poll interval. After each interval the bulk query will be executed again.
 
-Mappings
-^^^^^^^^
+Topic Routing
+^^^^^^^^^^^^^
 
-The source connector supports mapping of tables to columns. This is controlled via the ``cassandra.import.table.map``
-configuration option. This option expects a comma separated list of mappings of table to topic, separated by a colon.
-If no topic is provided the table name is used.
+The sink supports topic routing that allows mapping the messages from topics to a specific table. For example map
+a topic called "bloomberg_prices" to a table called "prices". This mapping is set in the
+``connect.jdbc.sink.export.mappings`` option.
+
+.. tip::
+
+    Explicit mapping of topics to tables is required. If not present the sink will not start and fail validation checks.
+
 
 Sink Connector
 ~~~~~~~~~~~~~~
@@ -757,12 +761,28 @@ The SinkRecord from Kafka connect is converted to JSON and feed into the prepare
 
 See DataStax's `documentation <http://cassandra.apache.org/doc/cql3/CQL-2.2.html#insertJson>`__ for type mapping.
 
-Mappings
-^^^^^^^^
+Topic Routing
+^^^^^^^^^^^^^
 
-The sink connector supports mapping of topics to tables. This is controlled via the ``cassandra.export.topic.table.map``
-configuration option. This option expects a comma separated list of mappings of topic to table, separated by a colon.
-If no table is provided the topic name is used.
+The sink supports topic routing that allows mapping the messages from topics to a specific table. For example map
+a topic called "bloomberg_prices" to a table called "prices". This mapping is set in the
+``connect.jdbc.sink.export.mappings`` option.
+
+.. tip::
+
+    Explicit mapping of topics to tables is required. If not present the sink will not start and fail validation checks.
+
+Field Selection
+^^^^^^^^^^^^^^^
+
+The sink supports selecting fields from the source topic or selecting all fields and mapping of these fields to columns
+in the target table. For example, map a field called "qty"  in a topic to a column called "quantity" in the target
+table.
+
+All fields can be selected by using "*" in the field part of ``connect.jdbc.sink.export.mappings``.
+
+Leaving the column name empty means trying to map to a column in the target table with the same name as the field in the
+source topic.
 
 Configurations
 --------------
@@ -964,12 +984,36 @@ Sink Connector Configurations
 
 Configurations options specific to the sink connector are:
 
-``connect.cassandra.export.map``
+``connect.jdbc.sink.export.mappings``
 
-Topic to Table map for import in format topic1:table1, if the table left blank topic name is used.
+Specifies to the mappings of topic to table. Additionally which fields to select from the source topic and their mappings
+to columns in the target table. Multiple mappings can be set comma separated wrapped in {}. Before ``;`` is topic
+to table mappings, after the field mappings.
+
+Examples:
+
+.. sourcecode:: bash
+
+    {TOPIC1:TABLE1;field1->col1,field5->col5,field7->col10}
+    {TOPIC2:TABLE2;field1->,field2->}
+    {TOPIC3:TABLE3;*}
 
 * Data Type: string
 * Optional : no
+
+``connect.jdbc.sink.error.policy``
+
+Specifies the action to be taken if an error occurs while inserting the data.
+
+There are three available options, **noop**, the error is swallowed, **throw**, the error is allowed to propagate and retry.
+For **retry** the Kafka message is redelivered up to a maximum number of times specified by the ``connect.jdbc.sink.max.retries``
+option. The ``connect.jdbc.sink.retry.interval`` option specifies the interval between retries.
+
+The errors will be logged automatically.
+
+* Type: string
+* Importance: high
+* Default: ``throw``
 
 Example
 ^^^^^^^
@@ -980,7 +1024,7 @@ Example
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
     topics=orders-topic
-    connect.cassandra.export.map=orders-topic:orders_write_back
+    connect.cassandra.export.mapping={orders-topic:orders_write_back;*}
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
     connect.cassandra.key.space=demo
