@@ -143,7 +143,7 @@ Start the Cassandra cql shell
     Connected to Test Cluster at 127.0.0.1:9042.
     [cqlsh 5.0.1 | Cassandra 3.0.2 | CQL spec 3.3.1 | Native protocol v4]
     Use HELP for help.
-    cqlsh> 
+    cqlsh>
 
 Execute the following:
 
@@ -254,15 +254,15 @@ Now check the logs of the connector you should see this:
 .. sourcecode:: bash
 
         ____        __        __  ___                  __        _
-       / __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
-      / / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
+/ __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
+/ / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
      / /_/ / /_/ / /_/ /_/ / /  / / /_/ / /_/ / / / / /_/ /_/ / / / / /  __/  __/ /
-    /_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
+/_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
            ______                                __           _____
-          / ____/___ _______________ _____  ____/ /________ _/ ___/____  __  _______________
-         / /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ __ \/ / / / ___/ ___/ _ \
+/ ____/___ _______________ _____  ____/ /________ _/ ___/____  __  _______________
+/ /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ __ \/ / / / ___/ ___/ _ \
         / /___/ /_/ (__  |__  ) /_/ / / / / /_/ / /  / /_/ /___/ / /_/ / /_/ / /  / /__/  __/
-        \____/\__,_/____/____/\__,_/_/ /_/\__,_/_/   \__,_//____/\____/\__,_/_/   \___/\___/
+\____/\__,_/____/____/\__,_/_/ /_/\__,_/_/   \__,_//____/\____/\__,_/_/   \___/\___/
 
      By Andrew Stevenson. (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceTask:64)
     [2016-05-06 13:34:41,193] INFO Attempting to connect to Cassandra cluster at localhost and create keyspace demo. (com.datamountaineer.streamreactor.connect.cassandra.CassandraConnection$:49)
@@ -342,9 +342,9 @@ There are two changes from the previous configuration:
 
 We can reuse the 3 records inserted into Cassandra earlier but lets clean out the target Kafka topic.
 
-.. note:: 
+.. note::
 
-    You must delete.topics.enable in etc/kafka/server.properties and shutdown any consumers of this topic for this to 
+    You must delete.topics.enable in etc/kafka/server.properties and shutdown any consumers of this topic for this to
     take effect.
 
 .. sourcecode:: bash
@@ -462,7 +462,7 @@ Execute the following:
       3 | 17fbbe00-137e-11e6-ab60-c9fbe0223a8f |   150 |           FU-KOSPI-C-20150201-100 | 200
 
     (4 rows)
-    cqlsh:demo> 
+    cqlsh:demo>
 
 Check the logs.
 
@@ -499,7 +499,7 @@ functionality to insert the rows.
 
 The task expects pre-created tables in Cassandra. Like the source connector the sink allows mapping of topics to tables.
 
-.. note:: The table and keyspace must be created before hand! 
+.. note:: The table and keyspace must be created before hand!
 .. note:: If the target table has TimeUUID fields the payload string for the corresponding field in Kafka must be a UUID.
 
 
@@ -520,7 +520,7 @@ cassandra-sink-distributed-orders.properties with contents below.
     name=cassandra-sink-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
-    topics=orders-topic 
+    topics=orders-topic
     connect.cassandra.export.map={orders-topic:orders_write_back;*}
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
@@ -529,7 +529,7 @@ cassandra-sink-distributed-orders.properties with contents below.
     connect.cassandra.username=cassandra
     connect.cassandra.password=cassandra
 
-The main difference here is the *cassandra.export.mapping*. This like the source connector but reversed. This is comma
+The main difference here is the *cassandra.export.map*. This like the source connector but reversed. This is comma
 separated list of topic to table mappings. The mapping for each element in the list is separate by a _:_ .
 In this example the routing is orders-topic to the orders\_write\_back table in Cassandra and all fields are selected.
 
@@ -555,7 +555,7 @@ The sink expects the tables it's configured to write to are already present in C
     ----+---------+-------+---------+-----
 
     (0 rows)
-    cqlsh:demo> 
+    cqlsh:demo>
 
 Starting the Sink Connector (Distributed)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -564,13 +564,13 @@ Again will start in distributed mode.
 
 .. sourcecode:: bash
 
-    ➜  confluent-2.0.1/bin/connect-distributed etc/schema-registry/connect-avro-distributed.properties 
+    ➜  confluent-2.0.1/bin/connect-distributed etc/schema-registry/connect-avro-distributed.properties
 
 Once the connector has started lets use the kafka-connect-tools cli to post in our distributed properties file.
 
 .. sourcecode:: bash
 
-    ➜  java -jar build/libs/kafka-connect-cli-0.3-all.jar create cassandra-sink-orders < cassandra-sink-distributed-orders.properties 
+    ➜  java -jar build/libs/kafka-connect-cli-0.3-all.jar create cassandra-sink-orders < cassandra-sink-distributed-orders.properties
 
     #Connector `cassandra-sink-orders`:
     name=cassandra-sink-orders
@@ -591,15 +591,15 @@ Now check the logs to see if we started the sink.
 
 .. sourcecode:: bash
 
-    [2016-05-06 13:52:28,178] INFO 
+    [2016-05-06 13:52:28,178] INFO
         ____        __        __  ___                  __        _
-       / __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
-      / / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
+/ __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
+/ / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
      / /_/ / /_/ / /_/ /_/ / /  / / /_/ / /_/ / / / / /_/ /_/ / / / / /  __/  __/ /
-    /_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
+/_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
            ______                                __           _____ _       __
-          / ____/___ _______________ _____  ____/ /________ _/ ___/(_)___  / /__
-         / /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ / __ \/ //_/
+/ ____/___ _______________ _____  ____/ /________ _/ ___/(_)___  / /__
+/ /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ / __ \/ //_/
         / /___/ /_/ (__  |__  ) /_/ / / / / /_/ / /  / /_/ /___/ / / / / / ,<
         \____/\__,_/____/____/\__,_/_/ /_/\__,_/_/   \__,_//____/_/_/ /_/_/|_|
 
@@ -744,7 +744,8 @@ Topic Routing
 
 The sink supports topic routing that allows mapping the messages from topics to a specific table. For example map
 a topic called "bloomberg_prices" to a table called "prices". This mapping is set in the
-``connect.jdbc.sink.export.mappings`` option.
+``connect.jdbc.sink.export.map
+`` option.
 
 .. tip::
 
@@ -766,7 +767,8 @@ Topic Routing
 
 The sink supports topic routing that allows mapping the messages from topics to a specific table. For example map
 a topic called "bloomberg_prices" to a table called "prices". This mapping is set in the
-``connect.jdbc.sink.export.mappings`` option.
+``connect.jdbc.sink.export.map`` option.
+
 
 .. tip::
 
@@ -779,7 +781,7 @@ The sink supports selecting fields from the source topic or selecting all fields
 in the target table. For example, map a field called "qty"  in a topic to a column called "quantity" in the target
 table.
 
-All fields can be selected by using "*" in the field part of ``connect.jdbc.sink.export.mappings``.
+All fields can be selected by using "*" in the field part of ``connect.jdbc.sink.export.map``.
 
 Leaving the column name empty means trying to map to a column in the target table with the same name as the field in the
 source topic.
@@ -984,7 +986,7 @@ Sink Connector Configurations
 
 Configurations options specific to the sink connector are:
 
-``connect.jdbc.sink.export.mappings``
+``connect.jdbc.sink.export.map``
 
 Specifies to the mappings of topic to table. Additionally which fields to select from the source topic and their mappings
 to columns in the target table. Multiple mappings can be set comma separated wrapped in {}. Before ``;`` is topic
@@ -1024,7 +1026,7 @@ Example
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
     topics=orders-topic
-    connect.cassandra.export.mapping={orders-topic:orders_write_back;*}
+    connect.cassandra.export.map={orders-topic:orders_write_back;*}
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
     connect.cassandra.key.space=demo
