@@ -1,5 +1,6 @@
 .. image:: https://travis-ci.org/datamountaineer/stream-reactor-gradle.svg?branch=master
 
+
 Kafka Connect
 =============
 
@@ -15,10 +16,12 @@ production deployments with a low barrier to entry and low operational overhead,
 organisations data pipeline.
 
 Connectors
+----------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   kcql
    bloomberg
    cassandra
    druid

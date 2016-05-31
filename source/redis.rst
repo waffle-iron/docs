@@ -117,29 +117,23 @@ Since we are in standalone mode we'll create a file called ``redis-sink.properti
 .. sourcecode:: bash
 
     name=redis-sink
-    connect.redis.sink.key.mode=FIELDS
-    connect.redis.sink.keys=firstName,lastName
-    connect.redis.sink.fields=firstName,lastName,age,salary=income
     connect.redis.connection.host=localhost
     connect.redis.connection.port=6379
     connector.class=com.datamountaineer.streamreactor.connect.redis.sink.RedisSinkConnector
     tasks.max=1
     topics=person_redis
+    connect.redis.export.route.query=INSERT INTO TABLE1 SELECT * FROM person_redis
 
 This configuration defines:
 
 1.  The name of the sink.
-2.  The key mode. There are three available modes: SINK_RECORD, FIELDS and GENERIC. SINK_RECORD, uses the
-    SinkRecord.keyValue as the redis row key, FIELDS, combines the specified payload (kafka connect Struct instance)
-    fields to make up the redis row key ,GENERIC, combines the kafka topic, offset and partition to build the redis row key.
-3.  The fields to extract from the source topics payload to form the Redis key.
-4.  The fields to extract from the source topic payload to write to Redis.
-5.  The name of the redis host to connect to.
-6.  The redis port to connect to.
-7.  The sink class.
-8.  The max number of tasks the connector is allowed to created. Should not be greater than the number of partitions in
-    the source topicsotherwise tasks will be idle.
-9.  The source kafka topics to take events from.
+2.  The name of the redis host to connect to.
+3.  The redis port to connect to.
+4.  The sink class.
+5.  The max number of tasks the connector is allowed to created. Should not be greater than the number of partitions in
+    the source topics otherwise tasks will be idle.
+6.  The source kafka topics to take events from.
+7.  The field mappings, topic mappings and fields to use a the row key.
 
 Starting the Sink Connector (Standalone)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -167,14 +161,12 @@ We can use the CLI to check if the connector is up but you should be able to see
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get redis-sink
 
     #Connector name=`redis-sink`
-    connect.redis.sink.key.mode=FIELDS
-    connect.redis.sink.keys=firstName,lastName
-    connect.redis.sink.fields=firstName,lastName,age,salary=income
     connect.redis.connection.host=localhost
     connect.redis.connection.port=6379
     connector.class=com.datamountaineer.streamreactor.connect.redis.sink.RedisSinkConnector
     tasks.max=1
     topics=person_redis
+    connect.redis.export.route.query=INSERT INTO TABLE1 SELECT * FROM person_redis
     #task ids: 0
 
 .. sourcecode:: bash
@@ -191,12 +183,7 @@ We can use the CLI to check if the connector is up but you should be able to see
      / _, _/  __/ /_/ / (__  )___/ / / / / / ,<
     /_/ |_|\___/\__,_/_/____//____/_/_/ /_/_/|_|
 
-    [2016-05-08 22:37:05,617] INFO RedisSinkConfig values:
-        connect.redis.connection.port = 6379
-        connect.redis.sink.fields = firstName,lastName,age,salary=income
-        connect.redis.sink.keys = firstName,lastName
-        connect.redis.connection.host = localhost
-        connect.redis.sink.key.mode = FIELDS
+
      (com.datamountaineer.streamreactor.connect.redis.sink.config.RedisSinkConfig:165)
     [2016-05-08 22:37:05,641] INFO Settings:
     RedisSinkSettings(RedisConnectionInfo(localhost,6379,None),RedisKey(FIELDS,WrappedArray(firstName, lastName)),PayloadFields(false,Map(firstName -> firstName, lastName -> lastName, age -> age, salary -> income)))
@@ -291,10 +278,11 @@ The Redis sink writes records from Kafka to Redis.
 
 The sink supports:
 
-1. Key modes - Allows for custom or automatic Redis key generation. You can specify fields in the topic payload to
-   concatenate to form the key, write this a s string or Avro, or have the sink take the key value from the Kafka message.
-2. Field selection - Kafka topic payload field selection is supported, allowing you to have choose selection of fields
-   or all fields written to redis.
+1. Field selection - Kafka topic payload field selection is supported, allowing you to have choose selection of fields
+   or all fields written to Redis.
+2. Topic to table routing.
+3. RowKey selection - Selection of fields to use as the row key, if none specified the topic name, partition and offset is
+   used.
 
 Configurations
 --------------
@@ -320,15 +308,16 @@ Specifies the authorization password.
 * Data type : string
 * Optional  : yes
 
-``connect.redis.sink.key.mode``
+``connect.redis.export.route.query``
 
-Specifies which fields to consider when inserting the new Redis entry. If is not set it will take all the fields present
-in the payload. Field mapping is supported; this way a payload field can be inserted into a 'mapped' column. If this
-setting is not present it will insert all fields.
+Kafka connect query language expression. Allows for expressive topic to table routing, field selection and renaming. Fields
+to be used as the row key can be set by specifing the ``PK``. The below example uses field1 and field2 are the row key.
 
-* Data type : string
-* Optional  : no
-* Values : SINK_RECORD or FIELDS or GENERIC
+Examples:
+
+.. sourcecode:: sql
+
+    INSERT INTO TABLE1 SELECT * FROM TOPIC1;INSERT INTO TABLE2 SELECT * FROM TOPIC2 PK field1, field2
 
 
 Example
@@ -337,14 +326,12 @@ Example
 .. sourcecode:: bash
 
     name=redis-sink
-    connect.redis.sink.key.mode=FIELDS
-    connect.redis.sink.keys=firstName,lastName
-    connect.redis.sink.fields=firstName,lastName,age,salary=income
     connect.redis.connection.host=localhost
     connect.redis.connection.port=6379
     connector.class=com.datamountaineer.streamreactor.connect.redis.sink.RedisSinkConnector
     tasks.max=1
     topics=person_redis
+    connect.redis.export.route.query=INSERT INTO TABLE1 SELECT * FROM person_redis
 
 Schema Evolution
 ----------------

@@ -107,7 +107,8 @@ Since we are in standalone mode we'll create a file called ``elastic-sink.proper
     connect.elastic.url=localhost:9300
     connect.elastic.cluster.name=elasticsearch
     tasks.max=1
-    topics=test_table
+    topics=TOPIC1
+    connect.cassandra.export.route.query=INSERT INTO INDEX_1 SELECT field1, field2 FROM TOPIC1
 
 This configuration defines:
 
@@ -117,6 +118,7 @@ This configuration defines:
 4. Tne name of the cluster on the Elastic Search server to connect to.
 5. The max number of task allowed for this connector.
 6. The source topic to get records from.
+7. The field mapping and topic to index routing.
 
 Starting the Sink Connector (Standalone)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,12 +145,13 @@ We can use the CLI to check if the connector is up but you should be able to see
 
     ➜ java -jar build/libs/kafka-connect-cli-0.2-all.jar get elastic-sink
     #Connector `elastic-sink`:
-    topics=test_table
+    topics=TOPIC1
     name=elastic-sink
     connect.elastic.cluster.name=elasticsearch
     tasks.max=1
     connector.class=com.datamountaineer.streamreactor.connect.elastic.ElasticSinkConnector
     connect.elastic.url=127.0.0.1:9300
+    connect.cassandra.export.route.query=INSERT INTO INDEX_1 SELECT field1, field2 FROM TOPIC1
     #task ids: 0
 
 .. sourcecode:: bash
@@ -169,11 +172,7 @@ We can use the CLI to check if the connector is up but you should be able to see
 
     by Andrew Stevenson
            (com.datamountaineer.streamreactor.connect.elastic.ElasticSinkTask:33)
-    [2016-05-08 20:56:52,241] INFO ElasticSinkConfig values:
-        connect.elastic.url = 127.0.0.1:9300
-        connect.elastic.url.prefix = elasticsearch
-        connect.elastic.cluster.name = elasticsearch
-     (com.datamountaineer.streamreactor.connect.elastic.ElasticSinkConfig:135)
+
     [2016-05-08 20:56:52,327] INFO [Hebe] loaded [], sites [] (org.elasticsearch.plugins:149)
     [2016-05-08 20:56:52,765] INFO Initialising Elastic Json writer (com.datamountaineer.streamreactor.connect.elastic.ElasticJsonWriter:31)
     [2016-05-08 20:56:52,777] INFO Assigned List(test_table) topics. (com.datamountaineer.streamreactor.connect.elastic.ElasticJsonWriter:33)
@@ -190,7 +189,7 @@ and a ``random_field`` of type string.
 .. sourcecode:: bash
 
     bin/kafka-avro-console-producer \
-    > --broker-list localhost:9092 --topic test_table \
+    > --broker-list localhost:9092 --topic TOPIC1 \
     > --property value.schema='{"type":"record","name":"myrecord","fields":[{"name":"id","type":"int"},
     {"name":"random_field", "type": "string"}]}'
 
@@ -219,7 +218,7 @@ If we query Elastic Search for ``id`` 999:
 
 .. sourcecode:: bash
 
-    curl -XGET 'http://localhost:9200/test_table/_search?q=id:999'
+    curl -XGET 'http://localhost:9200/INDEX_1/_search?q=id:999'
 
     {
         "took": 45,
@@ -284,6 +283,7 @@ Features
 1. Auto index creation at start up.
 2. Topic to index mapping.
 3. Auto mapping of the Kafka topic schema to the index.
+4. Field selection
 
 Configurations
 --------------
@@ -302,12 +302,18 @@ Port of the Elastic cluster.
 * Data Type : string
 * Optional  : no
 
-``connect.elastic.topic.to.table.map``
+``connect.cassandra.export.route.query``
 
-Table to Topic map for import in table.map format table1:topic1,table2:topic2, if the topic left blank table name is used.
+Kafka connect query language expression. Allows for expressive table to topic routing, field selection and renaming.
 
-* Data Type : string
-* Optional  : yes
+Examples:
+
+.. sourcecode:: sql
+
+    INSERT INTO INDEX_1 SELECT field1, field2 FROM TOPIC1
+
+* Data type : string
+* Optional  : no
 
 Example
 ~~~~~~~
@@ -320,6 +326,7 @@ Example
     connect.elastic.cluster.name=elasticsearch
     tasks.max=1
     topics=test_table
+    connect.cassandra.export.route.query=INSERT INTO INDEX_1 SELECT field1, field2 FROM TOPIC1
 
 Schema Evolution
 ----------------

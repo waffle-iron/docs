@@ -1,8 +1,5 @@
 .. StreamReactor documentation master file, created by Andrew Stevenson
 
-.. figure:: ../images/DM-logo.jpg
-   :alt: 
-
 Stream Reactor
 ==============
 
@@ -21,7 +18,7 @@ Confluent Platform.
 Kafka Connectors
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    connectors
    tools

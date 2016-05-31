@@ -152,29 +152,21 @@ Since we are in standalone mode we'll create a file called ``hbase-sink.properti
 .. sourcecode:: bash
 
     name=person-hbase-test
-    connect.hbase.sink.rowkey.mode=FIELDS
-    connect.hbase.sink.fields=firstName,lastName,age,salary=income
     connector.class=com.datamountaineer.streamreactor.connect.hbase.HbaseSinkConnector
     tasks.max=1
-    topics=person_hbase
-    connect.hbase.sink.table.name=person_hbase
+    topics=TOPIC1
     connect.hbase.sink.column.family=d
-    connect.hbase.sink.key=firstName,lastName
+    connect.hbase.export.route.query=INSERT INTO person_hbase SELECT * FROM TOPIC1
 
 This configuration defines:
 
 1.  The name of the sink.
-2.  The key mode. There are three available modes: SINK_RECORD, FIELDS and GENERIC. SINK_RECORD, uses the
-    SinkRecord.keyValue as the hbase row key, FIELDS, combines the specified payload (kafka connect Struct instance)
-    fields to make up the HBase row key ,GENERIC, combines the kafka topic, offset and partition to build the hbase row key.
-3.  The fields to extract from the source topics payload.
-4.  The sink class.
-5.  The max number of tasks the connector is allowed to created. Should not be greater than the number of partitions in the source topics
+2.  The sink class.
+3.  The max number of tasks the connector is allowed to created. Should not be greater than the number of partitions in the source topics
     otherwise tasks will be idle.
-6.  The source kafka topics to take events from.
-7.  The HBase table to write to.
-8.  The HBase column family to write to.
-9.  The topic payload fields to use and the row key in Hbase.
+4.  The source kafka topics to take events from.
+5.  The HBase column family to write to.
+6.  The field mappings, topic mappings and fields to use a the row key.
 
 Starting the Sink Connector (Standalone)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -213,13 +205,6 @@ We can use the CLI to check if the connector is up but you should be able to see
        /_/ /_/_____/\__,_/____/\___/____/_/_/ /_/_/|_|
 
     By Stefan Bocutiu (com.datamountaineer.streamreactor.connect.hbase.HbaseSinkTask:44)
-    INFO HbaseSinkConfig values:
-        connect.hbase.sink.fields = firstName,lastName,age,salary=income
-        connect.hbase.sink.column.family = d
-        connect.hbase.sink.table.name = person_hbase
-        connect.hbase.sink.key = firstName,lastName
-        connect.hbase.sink.rowkey.mode = FIELDS
-
 
 
 Test Records
@@ -233,7 +218,7 @@ a ``lastnamme`` field of type string, an ``age`` field of type int and a ``salar
 .. sourcecode:: bash
 
     bin/kafka-avro-console-producer \
-      --broker-list localhost:9092 --topic person_hbase \
+      --broker-list localhost:9092 --topic TOPIC1 \
       --property value.schema='{"type":"record","name":"User","namespace":"com.datamountaineer.streamreactor.connect.hbase"
       "fields":[{"name":"firstName","type":"string"},{"name":"lastName","type":"string"},{"name":"age","type":"int"},
       {"name":"salary","type":"double"}]}'
@@ -311,20 +296,14 @@ The HBase sink writes records from Kafka to HBase.
 
 The sink supports:
 
-1. Key modes - Allows for custom or automatic HBase key generation. You can specify fields in the topic payload to
-   concatenate to form the key, write this a s string or Avro, or have the sink take the key value from the Kafka message.
-2. Field selection - Kafka topic payload field selection is supported, allowing you to have choose selection of fields
+1. Field selection - Kafka topic payload field selection is supported, allowing you to have choose selection of fields
    or all fields written to HBase.
+2. Topic to table routing.
+3. RowKey selection - Selection of fields to use as the row key, if none specified the topic name, partition and offset is
+   used.
 
 Configurations
 --------------
-
-``connect.hbase.sink.table.name``
-
-Specifies the target HBase table to insert into.
-
-* Data type : string
-* Optional  : no
 
 ``connect.hbase.sink.column.family``
 
@@ -333,44 +312,28 @@ Specifies the table column family to use when inserting the new entry columns.
 * Data type : string
 * Optional  : no
 
-``connect.hbase.sink.key``
+``connect.hbase.export.route.query``
 
-If row key mode is set to FIELDS this setting is required. Multiple fields can be specified by separating them via a
-comma. The fields are combined using a key separator by default is set to <\\n>.
+Kafka connect query language expression. Allows for expressive topic to table routing, field selection and renaming. Fields
+to be used as the row key can be set by specifing the ``PK``. The below example uses field1 and field2 are the row key.
 
-* Data type : string
-* Optional  : no
+Examples:
 
-``connect.hbase.sink.table.key.mode``
+.. sourcecode:: sql
 
-There are three available modes: SINK_RECORD, FIELDS and GENERIC.
-
-* Data type : string
-* Optional  : no
-
-``connect.hbase.sink.fields``
-
-Specifies which fields to consider when inserting the new HBase entry. If is not set it will take all the fields present
-in the payload. Field mapping is supported; this way a payload field can be inserted into a 'mapped' column. If this
-setting is not present it will insert all fields.
-
-* Data type : string
-* Optional  : no
+    INSERT INTO TABLE1 SELECT * FROM TOPIC1;INSERT INTO TABLE2 SELECT * FROM TOPIC2 PK field1, field2
 
 Example
 ~~~~~~~
 
 .. sourcecode:: bash
 
-    connect.hbase.sink.rowkey.mode=FIELDS
-    connect.hbase.sink.table.name=person
     connect.hbase.sink.column.family=d
-    connect.hbase.sink.key=firstName,lastName
-    connect.hbase.sink.fields=firstName,lastName,age,salary=income
+    connect.hbase.export.route.query=INSERT INTO person_hbase SELECT * FROM TOPIC1
     connector.class=com.datamountaineer.streamreactor.connect.hbase.HbaseSinkConnector
     tasks.max=1
-    topics=person_hbase
-    name=person-hbase-test
+    topics=TOPIC1
+    name=hbase-test
 
 Schema Evolution
 ----------------

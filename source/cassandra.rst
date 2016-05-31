@@ -189,7 +189,7 @@ Since we are in standalone mode we'll create a file called ``cassandra-source-bu
     name=cassandra-source-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
     cassandra.key.space=demo
-    cassandra.import.map=orders:orders-topic
+    connect.cassandra.import.route.query=INSERT INTO orders-topic SELECT * FROM orders
     cassandra.import.mode=bulk
     cassandra.authentication.mode=username_password
     cassandra.contact.points=localhost
@@ -243,7 +243,7 @@ We can use the CLI to check if the connector is up but you should be able to see
     connect.cassandra.contact.points=localhost
     connect.cassandra.username=cassandra
     connect.cassandra.password=cassandra
-    connect.cassandra.import.map=orders:orders-topic
+    connect.cassandra.import.route.query=INSERT INTO orders-topic SELECT * FROM orders
     #task ids: 0
 
 Check for Source Records in Kafka
@@ -253,16 +253,16 @@ Now check the logs of the connector you should see this:
 
 .. sourcecode:: bash
 
-        ____        __        __  ___                  __        _
-/ __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
-/ / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
-     / /_/ / /_/ / /_/ /_/ / /  / / /_/ / /_/ / / / / /_/ /_/ / / / / /  __/  __/ /
-/_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
+         ____        __        __  ___                  __        _
+        / __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
+       / / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
+      / /_/ / /_/ / /_/ /_/ / /  / / /_/ / /_/ / / / / /_/ /_/ / / / / /  __/  __/ /
+     /_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
            ______                                __           _____
-/ ____/___ _______________ _____  ____/ /________ _/ ___/____  __  _______________
-/ /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ __ \/ / / / ___/ ___/ _ \
+          / ____/___ _______________ _____  ____/ /________ _/ ___/____  __  _______________
+         / /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ __ \/ / / / ___/ ___/ _ \
         / /___/ /_/ (__  |__  ) /_/ / / / / /_/ / /  / /_/ /___/ / /_/ / /_/ / /  / /__/  __/
-\____/\__,_/____/____/\__,_/_/ /_/\__,_/_/   \__,_//____/\____/\__,_/_/   \___/\___/
+        \____/\__,_/____/____/\__,_/_/ /_/\__,_/_/   \__,_//____/\____/\__,_/_/   \___/\___/
 
      By Andrew Stevenson. (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceTask:64)
     [2016-05-06 13:34:41,193] INFO Attempting to connect to Cassandra cluster at localhost and create keyspace demo. (com.datamountaineer.streamreactor.connect.cassandra.CassandraConnection$:49)
@@ -272,13 +272,7 @@ Now check the logs of the connector you should see this:
     [2016-05-06 13:34:41,823] INFO Using data-center name 'datacenter1' for DCAwareRoundRobinPolicy (if this is incorrect, please provide the correct datacenter name with DCAwareRoundRobinPolicy constructor) (com.datastax.driver.core.policies.DCAwareRoundRobinPolicy:95)
     [2016-05-06 13:34:41,824] INFO New Cassandra host localhost/127.0.0.1:9042 added (com.datastax.driver.core.Cluster:1475)
     [2016-05-06 13:34:41,868] INFO Connection to Cassandra established. (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceTask:87)
-    [2016-05-06 13:34:41,878] INFO Received setting:
-        keySpace: demo
-        table: orders
-        topic: orders-topic
-        importMode: false
-        timestampColumn: created
-        allowFiltering: true (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:48)
+    ....
     [2016-05-06 13:34:41,923] INFO Source task Thread[WorkerSourceTask-cassandra-source-orders-0,5,main] finished initialization and start (org.apache.kafka.connect.runtime.WorkerSourceTask:342)
     [2016-05-06 13:34:41,927] INFO Query SELECT * FROM demo.orders WHERE created > maxTimeuuid(?) AND created <= minTimeuuid(?)  ALLOW FILTERING executing with bindings (1900-01-01 00:19:32+0019, 2016-05-06 13:34:41+0200). (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:156)
     [2016-05-06 13:34:41,948] INFO Querying returning results for demo.orders. (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:185)
@@ -320,8 +314,7 @@ Create a file called ``cassandra-source-incr-orders.properties`` and add the fol
     name=cassandra-source-orders
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
     connect.cassandra.key.space=demo
-    connect.cassandra.import.map=orders:orders-topic
-    connect.cassandra.import.timestamp.column=orders:created
+    connect.cassandra.import.route.query=INSERT INTO orders-topic SELECT * FROM orders PK created
     connect.cassandra.import.mode=incremental
     connect.cassandra.authentication.mode=username_password
     connect.cassandra.contact.points=localhost
@@ -330,7 +323,7 @@ Create a file called ``cassandra-source-incr-orders.properties`` and add the fol
 
 There are two changes from the previous configuration:
 
-1. ``connect.cassandra.import.timestamp.column`` has been added to identify the
+1. We have added the timestamp column ``created`` to the ``connect.cassandra.import.route.query``. This identifies the
    column used in the where clause with the lower and upper bounds.
 2. The ``connect.cassandra.import.mode`` has been set to ``incremental``.
 
@@ -388,8 +381,7 @@ Once the connector has started lets use the kafka-connect-tools cli to post in o
     connect.cassandra.contact.points=localhost
     connect.cassandra.username=cassandra
     connect.cassandra.password=cassandra
-    connect.cassandra.import.map=orders:orders-topic
-    connect.cassandra.import.timestamp.column=orders:created
+    connect.cassandra.import.route.query=INSERT INTO orders-topic SELECT * FROM orders PK created
     #task ids: 0
 
 If you switch back to the terminal you started the Connector in you should see the Cassandra Source being accepted and
@@ -397,13 +389,6 @@ the task starting and processing the 3 existing rows.
 
 .. sourcecode:: bash
 
-    [2016-05-06 13:44:32,963] INFO Received setting:
-        keySpace: demo
-        table: orders
-        topic: orders-topic
-        importMode: false
-        timestampColumn: created
-        allowFiltering: true (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:48)
     [2016-05-06 13:44:33,132] INFO Source task Thread[WorkerSourceTask-cassandra-source-orders-0,5,main] finished initialization and start (org.apache.kafka.connect.runtime.WorkerSourceTask:342)
     [2016-05-06 13:44:33,137] INFO Query SELECT * FROM demo.orders WHERE created > maxTimeuuid(?) AND created <= minTimeuuid(?)  ALLOW FILTERING executing with bindings (2016-05-06 09:23:28+0200, 2016-05-06 13:44:33+0200). (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:156)
     [2016-05-06 13:44:33,151] INFO Querying returning results for demo.orders. (com.datamountaineer.streamreactor.connect.cassandra.source.CassandraTableReader:185)
@@ -521,7 +506,7 @@ cassandra-sink-distributed-orders.properties with contents below.
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
     topics=orders-topic
-    connect.cassandra.export.map={orders-topic:orders_write_back;*}
+    connect.cassandra.export.route.query=INSERT INTO orders_write_back SELECT * FROM orders-topic
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
     connect.cassandra.key.space=demo
@@ -529,15 +514,12 @@ cassandra-sink-distributed-orders.properties with contents below.
     connect.cassandra.username=cassandra
     connect.cassandra.password=cassandra
 
-The main difference here is the *cassandra.export.map*. This like the source connector but reversed. This is comma
-separated list of topic to table mappings. The mapping for each element in the list is separate by a _:_ .
-In this example the routing is orders-topic to the orders\_write\_back table in Cassandra and all fields are selected.
-
-Additionally we must supply the topics configuration option for the framework.
-
 .. note:: All tables must be in the same keyspace.
 
-.. note:: If a topic specified in the topics configuration option is not present in the export.map the the topic name will be used.
+.. note::
+
+    If a topic specified in the topics configuration option is not present in the ``connect.cassandra.export.route.query``
+    the the topic name will be used.
 
 Cassandra Tables
 ^^^^^^^^^^^^^^^^
@@ -577,7 +559,7 @@ Once the connector has started lets use the kafka-connect-tools cli to post in o
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
     topics=orders-topic
-    connect.cassandra.export.map={orders-topic:orders_write_back;*}
+    connect.cassandra.export.route.query=INSERT INTO orders_write_back SELECT * FROM orders-topic
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
     connect.cassandra.key.space=demo
@@ -593,13 +575,13 @@ Now check the logs to see if we started the sink.
 
     [2016-05-06 13:52:28,178] INFO
         ____        __        __  ___                  __        _
-/ __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
-/ / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
+       / __ \____ _/ /_____ _/  |/  /___  __  ______  / /_____ _(_)___  ___  ___  _____
+      / / / / __ `/ __/ __ `/ /|_/ / __ \/ / / / __ \/ __/ __ `/ / __ \/ _ \/ _ \/ ___/
      / /_/ / /_/ / /_/ /_/ / /  / / /_/ / /_/ / / / / /_/ /_/ / / / / /  __/  __/ /
-/_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
+    /_____/\__,_/\__/\__,_/_/  /_/\____/\__,_/_/ /_/\__/\__,_/_/_/ /_/\___/\___/_/
            ______                                __           _____ _       __
-/ ____/___ _______________ _____  ____/ /________ _/ ___/(_)___  / /__
-/ /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ / __ \/ //_/
+          / ____/___ _______________ _____  ____/ /________ _/ ___/(_)___  / /__
+         / /   / __ `/ ___/ ___/ __ `/ __ \/ __  / ___/ __ `/\__ \/ / __ \/ //_/
         / /___/ /_/ (__  |__  ) /_/ / / / / /_/ / /  / /_/ /___/ / / / / / ,<
         \____/\__,_/____/____/\__,_/_/ /_/\__,_/_/   \__,_//____/_/_/ /_/_/|_|
 
@@ -727,7 +709,7 @@ is used. This is then passed to a prepared statement containing a range query. F
 
 .. warning::::
 
-    If the column used for tracking timestamps is a compound key,ALLOW FILTERING is appended to the query.
+    If the column used for tracking timestamps is a compound key, ALLOW FILTERING is appended to the query.
     This can have a detrimental performance impact of Cassandra as it is effectively issuing a full scan.
 
 Bulk
@@ -744,8 +726,7 @@ Topic Routing
 
 The sink supports topic routing that allows mapping the messages from topics to a specific table. For example map
 a topic called "bloomberg_prices" to a table called "prices". This mapping is set in the
-``connect.jdbc.sink.export.map
-`` option.
+``connect.cassandra.import.route.query`` and ``connect.cassandra.export.route.query`` option.
 
 .. tip::
 
@@ -767,7 +748,7 @@ Topic Routing
 
 The sink supports topic routing that allows mapping the messages from topics to a specific table. For example map
 a topic called "bloomberg_prices" to a table called "prices". This mapping is set in the
-``connect.jdbc.sink.export.map`` option.
+``connect.cassandra.export.route.query`` option.
 
 
 .. tip::
@@ -781,7 +762,7 @@ The sink supports selecting fields from the source topic or selecting all fields
 in the target table. For example, map a field called "qty"  in a topic to a column called "quantity" in the target
 table.
 
-All fields can be selected by using "*" in the field part of ``connect.jdbc.sink.export.map``.
+All fields can be selected by using "*" in the field part of ``connect.cassandra.import.route.query``.
 
 Leaving the column name empty means trying to map to a column in the target table with the same name as the field in the
 source topic.
@@ -898,31 +879,23 @@ Either bulk or incremental.
 * Optional  : no
 
 
-``connect.cassandra.import.timestamp.column``
+``connect.cassandra.import.route.query``
+
+Kafka connect query language expression. Allows for expressive table to topic routing, field selection and renaming.
+In incremental mode the timestampColumn can be specified by ``PK colName``.
+
+Examples:
+
+.. sourcecode:: sql
+
+    INSERT INTO TOPIC1 SELECT * FROM TOPIC1 PK myTimeUUICol
 
 * Data type : string
-* Optional  : no (Required for incremental mode)
+* Optional  : no
 
-Name of the timestamp column in the cassandra table to use identify deltas.
-Format, table1:col,table2:col.
+.. warning::
 
-.. warning:: Must be of CQL Type TimeUUID.
-
-``connect.cassandra.import.table.map``
-
-Table to Topic map for import in format table1:topic1,table2:topic2, if the topic is left blank table name is used.
-
- * Data Type : string
- * Optional  : no
-
-
-``connect.cassandra.import.source.allow.filtering``
-
-Enable ALLOW FILTERING in incremental selects.
-
-* Data type : boolean
-* Optional  : yes
-* Default   : true
+    The timestamp column must be of CQL Type TimeUUID.
 
 ``connect.cassandra.import.fetch.size``
 
@@ -958,7 +931,7 @@ Bulk Example
     name=cassandra-source-orders-bulk
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
     connect.cassandra.key.space=demo
-    connect.cassandra.import.map=orders:orders-topic
+    connect.cassandra.import.route.query=INSERT INTO TABLE_X SELECT * FROM TOPIC_Y
     connect.cassandra.import.mode=bulk
     connect.cassandra.authentication.mode=username_password
     connect.cassandra.contact.points=localhost
@@ -973,8 +946,7 @@ Incremental Example
     name=cassandra-source-orders-incremental
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.source.CassandraSourceConnector
     connect.cassandra.key.space=demo
-    connect.cassandra.import.map=orders:orders-topic
-    connect.cassandra.import.timestamp.column=orders:created
+    connect.cassandra.import.route.query=INSERT INTO TABLE_X SELECT * FROM TOPIC_Y PK created
     connect.cassandra.import.mode=incremental
     connect.cassandra.authentication.mode=username_password
     connect.cassandra.contact.points=localhost
@@ -986,19 +958,16 @@ Sink Connector Configurations
 
 Configurations options specific to the sink connector are:
 
-``connect.jdbc.sink.export.map``
+``connect.cassandra.export.route.query``
 
-Specifies to the mappings of topic to table. Additionally which fields to select from the source topic and their mappings
-to columns in the target table. Multiple mappings can be set comma separated wrapped in {}. Before ``;`` is topic
-to table mappings, after the field mappings.
+Kafka connect query language expression. Allows for expressive topic to table routing, field selection and renaming.
 
 Examples:
 
-.. sourcecode:: bash
+.. sourcecode:: sql
 
-    {TOPIC1:TABLE1;field1->col1,field5->col5,field7->col10}
-    {TOPIC2:TABLE2;field1->,field2->}
-    {TOPIC3:TABLE3;*}
+    INSERT INTO TABLE1 SELECT * FROM TOPIC1;INSERT INTO TABLE2 SELECT field1, field2, field3 as renamedField FROM TOPIC2
+
 
 * Data Type: string
 * Optional : no
@@ -1026,7 +995,8 @@ Example
     connector.class=com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
     tasks.max=1
     topics=orders-topic
-    connect.cassandra.export.map={orders-topic:orders_write_back;*}
+    connect.cassandra.export.route.query= INSERT INTO TABLE1 SELECT * FROM TOPIC1;INSERT INTO TABLE2 SELECT field1,
+    field2, field3 as renamedField FROM TOPIC2
     connect.cassandra.contact.points=localhost
     connect.cassandra.port=9042
     connect.cassandra.key.space=demo
