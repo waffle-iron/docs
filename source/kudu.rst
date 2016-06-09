@@ -301,8 +301,119 @@ Insert the records as before to have them written to Kudu.
 Features
 --------
 
-1. Auto conversion of Connect records to Kudu.
-2. Table to topic mapping.
+Kafka Connect Query Language
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**K** afka **C** onnect **Q** uery **L** anguage found here `GitHub repo <https://github.com/datamountaineer/kafka-connector-query-language>`_
+allows for routing and mapping using a SQL like syntax, consolidating typically features in to one configuration option.
+
+The JDBC sink supports the following:
+
+.. sourcecode:: bash
+
+    <write mode> INTO <target table> SELECT <fields> FROM <source topic> <AUTOCREATE> <PK> <PK_FIELDS> <AUTOEVOLVE>
+
+Example:
+
+.. sourcecode:: sql
+
+    #Insert mode, select all fields from topicA and write to tableA
+    INSERT INTO tableA SELECT * FROM topicA
+
+    #Insert mode, select 3 fields and rename from topicB and write to tableB
+    INSERT INTO tableB SELECT x AS a, y AS b and z AS c FROM topicB
+
+    #Insert mode, select all fields from topicC, auto create tableC and auto evolve, default pks will be created
+    INSERT INTO tableC SELECT * FROM topicC AUTOCREATE AUTOEVOLVE
+
+    #Upsert mode, select all fields from topicC, auto create tableC and auto evolve, use field1 and field2 as the primary keys
+    UPSERT INTO tableC SELECT * FROM topicC AUTOCREATE PK field1, field2 AUTOEVOLVE
+
+
+Auto conversion of Connect records to Kudu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The sink automatically converts incoming Connect records to Kudu inserts.
+
+Topic Routing
+~~~~~~~~~~~~~
+
+The sink supports topic routing that allows mapping the messages from topics to a specific table. For example, map a
+topic called "bloomberg_prices" to a table called "prices". This mapping is set in the ``connect.kudu.export.route.query``
+option.
+
+Example:
+
+.. sourcecode:: sql
+
+    //Select all
+    INSERT INTO table1 SELECT * FROM topic1; INSERT INTO tableA SELECT * FROM topicC
+
+.. tip::
+
+    Explicit mapping of topics to tables is required. If not present the sink will not start and fail validation checks.
+    Use AUTOCREATE to have the sink create tables for you based on the topic schema.
+
+Field Selection
+~~~~~~~~~~~~~~~
+
+The JDBC sink supports field selection and mapping. This mapping is set in the ``connect.kudu.export.route.query`` option.
+
+
+Examples:
+
+.. sourcecode:: sql
+
+    //Rename or map columns
+    INSERT INTO table1 SELECT lst_price AS price, qty AS quantity FROM topicA
+
+    //Select all
+    INSERT INTO table1 SELECT * FROM topic1
+
+.. tip:: Check you mappings to ensure the target columns exist.
+
+
+.. warning::
+
+    Field selection disables evolving the target table if the upstream schema in the Kafka topic changes. By specifying
+    field mappings it is assumed the user is not interested in new upstream fields. For example they may be tapping into a
+    pipeline for a Kafka stream job and not be intended as the final recipient of the stream.
+
+    If you chose field selection you must include the primary key fields otherwise the insert will fail.
+
+Auto Create Tables
+~~~~~~~~~~~~~~~~~~
+
+The sink supports auto creation of tables for each topic.
+
+Any table auto created will have primary keys added. These can either be user specified fields from the topic schema or 3 default
+columns set by the sink. If the defaults are requested the sink creates 3 columns, **__connect_topic**,
+**__connect_partition** and **__connect_offset**. These columns are set as primary keys. They are filled with the
+topic name, partition and offset of the record they came from.
+
+This mapping is set in the ``connect.kudu.export.route.query`` option.
+
+Examples
+
+.. sourcecode:: sql
+
+    //AutoCreate the target table
+    INSERT INTO table SELECT * FROM topic AUTOCREATE
+
+    //AuoCreate the target table with USER defined PKS from the record
+    INSERT INTO table SELECT * FROM topic AUTOCREATE PK field1, field2
+
+..	note::
+
+    The fields specified as the primary keys must be in the SELECT clause or all fields (*) must be selected
+
+The sink will try and create the table at start up if a schema for the topic is found in the Schema Registry. If no
+schema is found the table is created when the first record is received for the topic.
+
+.. tip::
+
+    Pre-create you topics with more than 1 partition so catch as DDL errors such as permission issues beforehand.
+
 
 Data Type Mappings
 ~~~~~~~~~~~~~~~~~~
@@ -337,12 +448,66 @@ Specifies a Kudu server.
 * Data type : string
 * Optional  : no
 
-``connect.kudu.topic.to.table``
+``connect.kudu.export.route.query``
 
-Table to Topic map for import in format table1:topic1,table2:topic2, if the topic left blank table name is used.
+Kafka connect query language expression. Allows for expressive topic to table routing, field selection and renaming.
 
-* Data type : string
-* Optional  : no
+Examples:
+
+.. sourcecode:: sql
+
+    INSERT INTO TABLE1 SELECT * FROM TOPIC1;INSERT INTO TABLE2 SELECT field1, field2, field3 as renamedField FROM TOPIC2
+
+
+* Data Type: string
+* Optional : no
+
+``connect.kudu.sink.error.policy``
+
+Specifies the action to be taken if an error occurs while inserting the data.
+
+There are three available options, **noop**, the error is swallowed, **throw**, the error is allowed to propagate and retry.
+For **retry** the Kafka message is redelivered up to a maximum number of times specified by the ``connect.kudu.sink.max.retries``
+option. The ``connect.kudu.sink.retry.interval`` option specifies the interval between retries.
+
+The errors will be logged automatically.
+
+* Type: string
+* Importance: high
+
+``connect.kudu.sink.max.retries``
+
+The maximum number of times a message is retried. Only valid when the ``connect.kudu.sink.error.policy`` is set to ``retry``.
+
+* Type: string
+* Importance: high
+* Default: 10
+
+
+``connect.kudu.sink.retry.interval``
+
+The interval, in milliseconds between retries if the sink is using ``connect.kudu.sink.error.policy`` set to **RETRY**.
+
+* Type: int
+* Importance: medium
+* Default : 60000 (1 minute)
+
+``connect.kudu.sink.schema.registry.url``
+
+The url for the Schema registry. This is used to retrieve the latest schema for table creation.
+
+* Type : string
+* Importance : high
+* Default : http://localhost:8081
+
+``connect.kudu.sink.batch.size``
+
+Specifies how many records to insert together at one time. If the connect framework provides less records when it is
+calling the sink it won't wait to fulfill this value but rather execute it.
+
+* Type : int
+* Importance : medium
+* Defaults : 3000
 
 Example
 ~~~~~~~
@@ -353,8 +518,10 @@ Example
     connector.class=com.datamountaineer.streamreactor.connect.kudu.KuduSinkConnector
     tasks.max=1
     connect.kudu.master=quickstart
-    connect.kudu.export.map=topic1:table2
+    connect.kudu.export.route.query=INSERT INTO kudu_test SELECT * FROM kudu_test AUTOCREATE PK id
     topics=kudu_test
+    connect.kudu.sink.schema.registry.url=http://myhost:8081
+
 
 Schema Evolution
 ----------------

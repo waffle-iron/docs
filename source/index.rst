@@ -18,7 +18,7 @@ Confluent Platform.
 Kafka Connectors
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
 
    connectors
    tools
