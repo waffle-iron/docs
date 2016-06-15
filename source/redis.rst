@@ -343,7 +343,7 @@ More information can be found `here <http://docs.confluent.io/2.0.1/schema-regis
 The Redis sink will automatically write and update the Redis table if new fields are added to the source topic,
 if fields are removed the Kafka Connect framework will return the default value for this field, dependent of the
 compatibility settings of the Schema registry. This value will be put into the Redis column family cell based on the
-``connect.redis.sink.fields`` mappings.
+``connect.redis.export.route.query`` mappings.
 
 Deployment Guidelines
 ---------------------
