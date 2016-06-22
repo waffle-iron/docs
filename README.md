@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/datamountaineer/docs.png?label=ready&title=Ready)](https://waffle.io/datamountaineer/docs)
 # Documentation for Datamountaineer and the Stream Reactor architecture
 
 [Docs](http://streamreactor.readthedocs.io/en/latest/)
